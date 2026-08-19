@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { collection, getDocs, query, where } from 'firebase/firestore';
+import { Share2, Check } from 'lucide-react';
 import { db } from '../lib/firebase';
 import MapViewer from '../components/MapViewer';
 import './ProjectViewer.css';
@@ -11,6 +12,7 @@ const ProjectViewer = () => {
   const [plots, setPlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     loadProject();
@@ -44,6 +46,23 @@ const ProjectViewer = () => {
     }
   };
 
+  const handleShare = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: project?.name || 'Real Estate Project',
+          url: window.location.href,
+        });
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
+  };
+
   if (loading) {
     return (
       <div className="viewer-loading">
@@ -74,6 +93,12 @@ const ProjectViewer = () => {
             <h1 style={{ color: project.brandColor || '#333' }}>{project.name}</h1>
             {project.clientName && <span className="viewer-client">{project.clientName}</span>}
           </div>
+        </div>
+        <div className="viewer-actions">
+          <button className="btn-share" onClick={handleShare} aria-label="Share project">
+            {copied ? <Check size={18} color="#10b981" /> : <Share2 size={18} />}
+            <span className="share-text">{copied ? 'Copied!' : 'Share'}</span>
+          </button>
         </div>
       </div>
 
