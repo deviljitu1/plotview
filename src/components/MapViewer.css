@@ -36,7 +36,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #e5e7eb;
+  background: #fff;
 }
 
 .transform-wrapper {
@@ -58,8 +58,7 @@
   height: auto;
   max-width: 100%;
   max-height: 85vh;
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
-  background-color: #ffffff;
+  background: transparent;
 }
 
 .map-empty-state {

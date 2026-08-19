@@ -80,6 +80,7 @@ const MapViewer = ({ project, plots: plotsData }) => {
                     href={mapImageUrl}
                     width={imgDim.width}
                     height={imgDim.height}
+                    preserveAspectRatio="xMidYMid meet"
                     style={{ pointerEvents: 'none', userSelect: 'none' }}
                   />
 
