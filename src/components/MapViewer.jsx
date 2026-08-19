@@ -53,11 +53,7 @@ const MapViewer = ({ project, plots: plotsData }) => {
         <svg
           viewBox={`0 0 ${imgDim.width} ${imgDim.height}`}
           className="interactive-map"
-          style={{ 
-            backgroundColor: '#f0f0f0', 
-            width: `${zoomLevel}%`,
-            maxHeight: `${0.8 * zoomLevel}vh`
-          }}
+          style={{ backgroundColor: '#f0f0f0', width: `${zoomLevel}%` }}
         >
                   {/* Background Map Image */}
                   <image
