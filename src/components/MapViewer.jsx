@@ -28,6 +28,17 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
 
   const plotTypes = ['All', ...new Set((plotsData || []).map(p => p.type).filter(Boolean))];
 
+  // Auto-open plot details if search query exactly matches a plot number
+  useEffect(() => {
+    if (searchQuery && hasPlots) {
+      const q = searchQuery.toLowerCase().trim();
+      const exactMatch = plotsData.find(p => (p.name || '').toLowerCase() === q);
+      if (exactMatch) {
+        setSelectedPlot(exactMatch);
+      }
+    }
+  }, [searchQuery, hasPlots, plotsData]);
+
   const isPlotVisible = (plot) => {
     if (filterType !== 'All' && plot.type !== filterType) return false;
     if (filterStatus !== 'All' && plot.status !== filterStatus) return false;

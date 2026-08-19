@@ -92,7 +92,7 @@ const SidebarNav = ({
                   <Search size={14} className="input-icon" />
                   <input
                     type="text"
-                    placeholder="Search plot..."
+                    placeholder="Search plot number..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
