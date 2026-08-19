@@ -129,6 +129,7 @@
   .viewer-header {
     padding: 0.4rem 0.65rem;
     align-items: center;
+    flex-wrap: wrap;
   }
   .viewer-brand {
     gap: 0.5rem;
@@ -148,9 +149,15 @@
   }
   .viewer-actions {
     gap: 0.5rem;
+    flex-wrap: wrap;
   }
   .nav-legend {
-    display: none; /* Hide legend on mobile to save space */
+    width: 100%;
+    justify-content: center;
+    order: 3;
+    padding-top: 0.4rem;
+    margin-top: 0.2rem;
+    border-top: 1px solid #f0f0f0;
   }
   .btn-share {
     padding: 0.4rem;
