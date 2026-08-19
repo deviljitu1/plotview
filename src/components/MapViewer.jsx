@@ -64,6 +64,7 @@ const MapViewer = ({ project, plots: plotsData }) => {
                     width={imgDim.width}
                     height={imgDim.height}
                     preserveAspectRatio="xMidYMid slice"
+                    style={{ pointerEvents: 'none', userSelect: 'none' }}
                   />
 
                   {/* Interactive Plot Overlays */}

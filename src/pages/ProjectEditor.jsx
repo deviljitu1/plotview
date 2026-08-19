@@ -35,6 +35,7 @@ const ProjectEditor = () => {
   const [plotForm, setPlotForm] = useState({
     name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: ''
   });
+  const [saveStatus, setSaveStatus] = useState('');
 
   // Bulk Import
   const [importPreview, setImportPreview] = useState(null); // parsed rows for preview
@@ -403,11 +404,17 @@ const ProjectEditor = () => {
   const handleSave = async () => {
     if (!projectName || !slug) return alert('Project name and slug are required.');
     setSaving(true);
+    setSaveStatus('Uploading Image...');
     try {
       const projectId = id || uuidv4();
+      
+      console.log('Step 1: Uploading image to Cloudinary...');
       const imageUrl = await uploadImage(projectId);
+      console.log('Image uploaded/processed. URL:', imageUrl);
 
       // Save project doc
+      setSaveStatus('Saving Project Data...');
+      console.log('Step 2: Saving project document to Firestore...');
       await setDoc(doc(db, 'projects', projectId), {
         name: projectName,
         slug,
@@ -421,14 +428,19 @@ const ProjectEditor = () => {
         updatedAt: new Date().toISOString(),
         ...(!isEditing && { createdAt: new Date().toISOString() })
       }, { merge: true });
+      console.log('Project document saved successfully.');
 
+      setSaveStatus('Updating Plots...');
+      console.log('Step 3: Preparing batch commit for plots...');
       // Save plots as subcollection using batch
       const batch = writeBatch(db);
       
       // Delete existing plots first
       if (isEditing) {
+        console.log('Fetching existing plots to delete...');
         const existingPlots = await getDocs(collection(db, 'projects', projectId, 'plots'));
         existingPlots.docs.forEach(d => batch.delete(d.ref));
+        console.log(`Queued ${existingPlots.docs.length} existing plots for deletion.`);
       }
 
       // Add new plots
@@ -445,14 +457,19 @@ const ProjectEditor = () => {
         });
       });
 
+      console.log('Step 4: Committing batch...');
       await batch.commit();
+      console.log('Batch committed successfully.');
+      
+      setSaveStatus('Done!');
       alert('Project saved successfully!');
       navigate('/admin/dashboard');
     } catch (err) {
-      console.error('Error saving project:', err);
-      alert('Error saving project: ' + err.message);
+      console.error('Error saving project at step:', saveStatus, err);
+      alert(`Error saving project during "${saveStatus}": ${err.message}`);
     } finally {
       setSaving(false);
+      setSaveStatus('');
     }
   };
 
@@ -473,7 +490,7 @@ const ProjectEditor = () => {
         </button>
         <h2>{isEditing ? 'Edit Project' : 'New Project'}</h2>
         <button className="save-btn" onClick={handleSave} disabled={saving}>
-          {saving ? 'Saving...' : 'Save Project'}
+          {saving ? (saveStatus || 'Saving...') : 'Save Project'}
         </button>
       </nav>
 
@@ -845,6 +862,7 @@ const ProjectEditor = () => {
                       href={imagePreview || mapImageUrl}
                       width={imgDimensions.width}
                       height={imgDimensions.height}
+                      style={{ pointerEvents: 'none', userSelect: 'none' }}
                     />
 
                     {plots.map((plot) => {
