@@ -77,25 +77,11 @@ const MapViewer = ({ project, plots: plotsData }) => {
 
   return (
     <div className="map-viewer-wrap">
-      <div className="map-filters-container">
-        <div className="map-legend">
-          <div className="legend-item">
-            <div className="legend-color" style={{ backgroundColor: 'rgba(16, 185, 129, 0.8)' }}></div>
-            <span>Available</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color" style={{ backgroundColor: 'rgba(245, 158, 11, 0.8)' }}></div>
-            <span>Booked</span>
-          </div>
-          <div className="legend-item">
-            <div className="legend-color" style={{ backgroundColor: 'rgba(239, 68, 68, 0.8)' }}></div>
-            <span>Sold</span>
-          </div>
-        </div>
-
-        <div className="map-filters">
-          <div className="filter-search">
-            <Search size={14} className="search-icon" />
+      {/* Floating Modern UI over the map */}
+      <div className="map-floating-ui">
+        <div className="map-filters-glass">
+          <div className="filter-search-glass">
+            <Search size={16} className="search-icon-glass" />
             <input
               type="text"
               placeholder="Search plot..."
@@ -103,17 +89,32 @@ const MapViewer = ({ project, plots: plotsData }) => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="filter-select">
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="filter-select-glass">
             {plotTypes.map(type => (
               <option key={type} value={type}>{type === 'All' ? 'All Types' : type}</option>
             ))}
           </select>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="filter-select">
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="filter-select-glass">
             <option value="All">All Statuses</option>
             <option value="Available">Available</option>
             <option value="Booked">Booked</option>
             <option value="Sold">Sold</option>
           </select>
+        </div>
+
+        <div className="map-legend-glass">
+          <div className="legend-item-glass">
+            <div className="legend-color-glass available"></div>
+            <span>Available</span>
+          </div>
+          <div className="legend-item-glass">
+            <div className="legend-color-glass booked"></div>
+            <span>Booked</span>
+          </div>
+          <div className="legend-item-glass">
+            <div className="legend-color-glass sold"></div>
+            <span>Sold</span>
+          </div>
         </div>
       </div>
 
