@@ -31,7 +31,11 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
   const isPlotVisible = (plot) => {
     if (filterType !== 'All' && plot.type !== filterType) return false;
     if (filterStatus !== 'All' && plot.status !== filterStatus) return false;
-    if (searchQuery && !plot.name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      const plotName = (plot.name || '').toLowerCase();
+      if (!plotName.includes(q)) return false;
+    }
     return true;
   };
 

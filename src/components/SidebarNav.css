@@ -17,17 +17,15 @@
 .sidebar-drawer {
   position: fixed;
   top: 0;
-  right: -70px; /* Slide from right, 64px width */
+  right: -70px;
   width: 64px;
   height: 100%;
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  box-shadow: -4px 0 24px rgba(0, 0, 0, 0.1);
+  background: transparent;
   z-index: 101;
   display: flex;
   flex-direction: column;
   transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-top: 1rem;
 }
 
 .sidebar-drawer.open {
@@ -38,20 +36,25 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 1rem 0;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
+  padding: 0.5rem 0;
+  margin-bottom: 0.5rem;
 }
 
 .btn-close-sidebar {
-  background: none;
-  border: none;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
   cursor: pointer;
-  color: #666;
-  padding: 0.2rem;
+  color: #555;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.2s;
+  transition: all 0.2s;
 }
 
 .btn-close-sidebar:active {
@@ -60,14 +63,7 @@
 
 .sidebar-content {
   flex: 1;
-  overflow-y: auto;
-  padding: 1rem 0;
-  /* Hide scrollbar for clean look */
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-.sidebar-content::-webkit-scrollbar {
-  display: none;
+  padding: 0;
 }
 
 .sidebar-action-list {
@@ -84,23 +80,24 @@
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: transparent;
-  border: none;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   cursor: pointer;
-  color: #555;
+  color: #444;
   transition: all 0.2s ease;
 }
 
 .sidebar-action-item:hover, .sidebar-action-item.active {
-  background: rgba(0,0,0,0.05);
+  background: #ffffff;
   color: #111;
+  transform: scale(1.05);
 }
 
 .sidebar-divider {
-  height: 1px;
-  width: 32px;
-  background: rgba(0,0,0,0.08);
-  margin: 0.5rem auto;
+  display: none; /* Hide divider if background is transparent */
 }
 
 .sidebar-expandable {
@@ -118,8 +115,8 @@
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  box-shadow: -4px 4px 20px rgba(0, 0, 0, 0.12);
-  border: 1px solid rgba(0,0,0,0.05);
+  box-shadow: -4px 4px 20px rgba(0, 0, 0, 0.15);
+  border: 1px solid rgba(0,0,0,0.08);
   border-radius: 12px;
   padding: 0.8rem;
   opacity: 0;
