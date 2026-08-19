@@ -71,12 +71,20 @@ const MapViewer = ({ project, plots: plotsData }) => {
                 <button onClick={() => zoomOut()}>−</button>
                 <button onClick={() => resetTransform()}>Reset</button>
               </div>
-              <TransformComponent wrapperClass="transform-wrapper" contentClass="transform-content">
+              <TransformComponent
+                wrapperClass="transform-wrapper"
+                contentClass="transform-content"
+                wrapperStyle={{ width: 'max-content', minWidth: '100%', overflow: 'visible' }}
+                contentStyle={{ width: 'max-content', minWidth: '100%' }}
+              >
                 <svg
+                  width={imgDim.width}
+                  height={imgDim.height}
                   viewBox={`0 0 ${imgDim.width} ${imgDim.height}`}
                   className="interactive-map"
                   style={{
-                    backgroundColor: 'transparent',
+                    '--map-width': `${imgDim.width}px`,
+                    '--map-height': `${imgDim.height}px`,
                     aspectRatio: `${imgDim.width} / ${imgDim.height}`,
                   }}
                 >

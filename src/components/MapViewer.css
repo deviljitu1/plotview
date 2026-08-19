@@ -40,7 +40,7 @@
   position: relative;
   overflow: auto;
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   background: #fff;
   overscroll-behavior: contain;
@@ -48,7 +48,8 @@
 }
 
 .transform-wrapper {
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   height: auto;
   min-height: calc(100vh - 120px);
   overflow: visible !important;
@@ -59,7 +60,8 @@
   display: flex;
   justify-content: center;
   align-items: flex-start;
-  width: 100%;
+  width: max-content;
+  min-width: 100%;
   height: auto;
   min-height: calc(100vh - 120px);
   padding: 0;
@@ -68,10 +70,10 @@
 
 .interactive-map {
   display: block;
-  width: min(100%, 1449px);
-  min-width: 320px;
+  width: var(--map-width, 1000px);
+  min-width: var(--map-width, 1000px);
   height: auto;
-  max-width: 100%;
+  max-width: none;
   background: transparent;
   touch-action: none;
   user-select: none;
