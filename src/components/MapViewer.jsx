@@ -1,6 +1,6 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { Search } from 'lucide-react';
+import { Search, Filter, X } from 'lucide-react';
 import PlotDetailsModal from './PlotDetailsModal';
 import './MapViewer.css';
 
@@ -10,6 +10,7 @@ const MapViewer = ({ project, plots: plotsData }) => {
   const [filterType, setFilterType] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const containerRef = useRef(null);
   const mapImageUrl = project?.mapImageUrl || project?.backgroundUrl || '';
 
@@ -78,7 +79,16 @@ const MapViewer = ({ project, plots: plotsData }) => {
   return (
     <div className="map-viewer-wrap">
       {/* Floating Modern UI over the map */}
-      <div className="map-floating-ui">
+      <div className={`map-floating-ui ${isFiltersOpen ? 'expanded' : ''}`}>
+        <button 
+          className="filter-toggle-btn" 
+          onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+          aria-label="Toggle Filters"
+        >
+          {isFiltersOpen ? <X size={16} /> : <Filter size={16} />}
+          <span>{isFiltersOpen ? 'Close' : 'Search & Filter'}</span>
+        </button>
+
         <div className="map-filters-glass">
           <div className="filter-search-glass">
             <Search size={16} className="search-icon-glass" />
@@ -100,21 +110,6 @@ const MapViewer = ({ project, plots: plotsData }) => {
             <option value="Booked">Booked</option>
             <option value="Sold">Sold</option>
           </select>
-        </div>
-
-        <div className="map-legend-glass">
-          <div className="legend-item-glass">
-            <div className="legend-color-glass available"></div>
-            <span>Available</span>
-          </div>
-          <div className="legend-item-glass">
-            <div className="legend-color-glass booked"></div>
-            <span>Booked</span>
-          </div>
-          <div className="legend-item-glass">
-            <div className="legend-color-glass sold"></div>
-            <span>Sold</span>
-          </div>
         </div>
       </div>
 

@@ -73,8 +73,34 @@
 .viewer-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1.5rem;
 }
+
+.nav-legend {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #444;
+  font-family: 'Inter', sans-serif;
+}
+
+.nav-legend-color {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.nav-legend-color.available { background: rgba(16, 185, 129, 0.9); }
+.nav-legend-color.booked { background: rgba(245, 158, 11, 0.9); }
+.nav-legend-color.sold { background: rgba(239, 68, 68, 0.9); }
 
 .btn-share {
   display: flex;
@@ -119,6 +145,12 @@
     display: block;
     margin-top: 0.1rem;
     font-size: 0.68rem;
+  }
+  .viewer-actions {
+    gap: 0.5rem;
+  }
+  .nav-legend {
+    display: none; /* Hide legend on mobile to save space */
   }
   .btn-share {
     padding: 0.4rem;

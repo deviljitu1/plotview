@@ -93,40 +93,62 @@
   box-shadow: 0 0 0 2px var(--brand-color, #6366f1);
 }
 
-.map-legend-glass {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-  background: rgba(255, 255, 255, 0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  padding: 0.4rem 1rem;
-  border-radius: 99px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  pointer-events: auto;
+
+
+.filter-toggle-btn {
+  display: none;
 }
 
-.legend-item-glass {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 500;
-  color: #444;
-  font-family: 'Inter', sans-serif;
-}
+@media (max-width: 768px) {
+  .map-floating-ui {
+    top: 0.75rem;
+    align-items: flex-end;
+    right: 1rem;
+    left: auto;
+    transform: none;
+    width: auto;
+  }
 
-.legend-color-glass {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-}
+  .filter-toggle-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.8rem;
+    background: rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 99px;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    color: #444;
+    font-weight: 500;
+    font-size: 0.8rem;
+    cursor: pointer;
+    pointer-events: auto;
+    transition: all 0.2s ease;
+  }
 
-.legend-color-glass.available { background: rgba(16, 185, 129, 0.9); }
-.legend-color-glass.booked { background: rgba(245, 158, 11, 0.9); }
-.legend-color-glass.sold { background: rgba(239, 68, 68, 0.9); }
+  .filter-toggle-btn:hover {
+    background: #fff;
+  }
+
+  /* Hide filters on mobile by default */
+  .map-filters-glass {
+    display: none;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  .map-filters-glass {
+    border-radius: 16px;
+    padding: 0.75rem;
+  }
+
+  /* Show when expanded */
+  .map-floating-ui.expanded .map-filters-glass {
+    display: flex;
+  }
+}
 
 /* ── Map container ─────────────────────────────── */
 .map-viewer {

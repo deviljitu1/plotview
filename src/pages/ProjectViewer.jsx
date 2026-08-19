@@ -95,6 +95,20 @@ const ProjectViewer = () => {
           </div>
         </div>
         <div className="viewer-actions">
+          <div className="nav-legend">
+            <div className="nav-legend-item">
+              <div className="nav-legend-color available"></div>
+              <span>Available</span>
+            </div>
+            <div className="nav-legend-item">
+              <div className="nav-legend-color booked"></div>
+              <span>Booked</span>
+            </div>
+            <div className="nav-legend-item">
+              <div className="nav-legend-color sold"></div>
+              <span>Sold</span>
+            </div>
+          </div>
           <button className="btn-share" onClick={handleShare} aria-label="Share project">
             {copied ? <Check size={18} color="#10b981" /> : <Share2 size={18} />}
             <span className="share-text">{copied ? 'Copied!' : 'Share'}</span>
