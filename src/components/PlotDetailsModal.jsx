@@ -7,7 +7,11 @@ const PlotDetailsModal = ({ plot, brandColor, onClose }) => {
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="modal-content"
+        style={{ '--modal-accent': brandColor || '#6366f1' }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <h2>Unit Details</h2>
           <button className="close-button" onClick={onClose}>

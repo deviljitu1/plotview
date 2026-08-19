@@ -54,10 +54,15 @@ const MapViewer = ({ project, plots: plotsData }) => {
           </div>
         )}
         <TransformWrapper
-          initialScale={0.8}
+          initialScale={1}
           minScale={0.3}
           maxScale={4}
           centerOnInit={true}
+          centerZoomedOut={true}
+          limitToBounds={false}
+          wheel={{ step: 0.12 }}
+          pinch={{ step: 8 }}
+          doubleClick={{ mode: 'reset' }}
         >
           {({ zoomIn, zoomOut, resetTransform }) => (
             <>
