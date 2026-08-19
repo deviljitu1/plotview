@@ -1,0 +1,182 @@
+[
+  {
+    "id": "18",
+    "area": 1484,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "East",
+    "size": "61'4\" x 24'6\"",
+    "points": "160,170 300,190 295,250 148,235",
+    "name": "Plot 18"
+  },
+  {
+    "id": "19",
+    "area": 1513,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "East",
+    "size": "60'6\" x 24'6\"",
+    "points": "148,235 295,250 290,320 135,305",
+    "name": "Plot 19"
+  },
+  {
+    "id": "13",
+    "area": 1225,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "West",
+    "size": "50' x 24'6\"",
+    "points": "345,195 455,210 447,280 336,264",
+    "name": "Plot 13"
+  },
+  {
+    "id": "14",
+    "area": 1225,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "West",
+    "size": "50' x 24'6\"",
+    "points": "336,264 447,280 439,350 327,333",
+    "name": "Plot 14"
+  },
+  {
+    "id": "15",
+    "area": 1225,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "West",
+    "size": "50' x 24'6\"",
+    "points": "327,333 439,350 431,420 318,402",
+    "name": "Plot 15"
+  },
+  {
+    "id": "16",
+    "area": 1225,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "West",
+    "size": "50' x 24'6\"",
+    "points": "318,402 431,420 423,490 309,471",
+    "name": "Plot 16"
+  },
+  {
+    "id": "17",
+    "area": 991,
+    "type": "LIG",
+    "status": "Available",
+    "facing": "West",
+    "size": "50'8\" x 17'6\"",
+    "points": "309,471 423,490 415,560 300,540",
+    "name": "Plot 17"
+  },
+  {
+    "id": "12",
+    "area": 1225,
+    "type": "Plot",
+    "status": "Booked",
+    "facing": "East",
+    "size": "50' x 24'6\"",
+    "points": "455,210 555,225 548,312 445,297",
+    "name": "Plot 12"
+  },
+  {
+    "id": "11",
+    "area": 1225,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "East",
+    "size": "50' x 24'6\"",
+    "points": "445,297 548,312 542,400 435,385",
+    "name": "Plot 11"
+  },
+  {
+    "id": "10",
+    "area": 1225,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "East",
+    "size": "50' x 24'6\"",
+    "points": "435,385 542,400 536,487 425,472",
+    "name": "Plot 10"
+  },
+  {
+    "id": "9",
+    "area": 1699,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "East",
+    "size": "50'8\" x 29'10\"",
+    "points": "425,472 536,487 530,575 415,560",
+    "name": "Plot 9"
+  },
+  {
+    "id": "5",
+    "area": 1225,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "West",
+    "size": "50' x 24'6\"",
+    "points": "600,230 695,245 691,332 592,317",
+    "name": "Plot 5"
+  },
+  {
+    "id": "6",
+    "area": 1225,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "West",
+    "size": "50' x 24'6\"",
+    "points": "592,317 691,332 687,420 585,405",
+    "name": "Plot 6"
+  },
+  {
+    "id": "7",
+    "area": 1225,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "West",
+    "size": "50' x 24'6\"",
+    "points": "585,405 687,420 683,507 577,492",
+    "name": "Plot 7"
+  },
+  {
+    "id": "8",
+    "area": 1076,
+    "type": "LIG",
+    "status": "Sold",
+    "facing": "West",
+    "size": "50'8\" x 17'6\"",
+    "points": "577,492 683,507 680,595 570,580",
+    "name": "Plot 8"
+  },
+  {
+    "id": "3",
+    "area": 774,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "East",
+    "size": "42'1\" x 24'6\"",
+    "points": "691,332 770,335 790,430 687,420",
+    "name": "Plot 3"
+  },
+  {
+    "id": "2",
+    "area": 910,
+    "type": "Plot",
+    "status": "Booked",
+    "facing": "East",
+    "size": "48'11\" x 24'6\"",
+    "points": "687,420 790,430 810,525 683,507",
+    "name": "Plot 2"
+  },
+  {
+    "id": "1",
+    "area": 1404,
+    "type": "Plot",
+    "status": "Available",
+    "facing": "East",
+    "size": "56'11\" x 31'0\"",
+    "points": "683,507 810,525 830,620 680,595",
+    "name": "Plot 1"
+  }
+]

@@ -1,0 +1,122 @@
+.map-viewer-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.map-legend {
+  display: flex;
+  gap: 1.5rem;
+  padding: 0.75rem 2rem;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: #555;
+  font-family: 'Inter', sans-serif;
+}
+
+.legend-color {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+}
+
+.map-viewer {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #e5e7eb;
+}
+
+.transform-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.transform-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.interactive-map {
+  max-width: 100%;
+  max-height: 100%;
+  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+}
+
+.plot-group {
+  cursor: pointer;
+}
+
+.plot-polygon {
+  transition: all 0.2s;
+}
+
+.plot-polygon-hover {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.plot-group:hover .plot-polygon {
+  stroke: #ffffff;
+  stroke-width: 3;
+  fill: rgba(255, 255, 255, 0.45) !important;
+}
+
+.controls {
+  position: absolute;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 100;
+}
+
+.controls button {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  cursor: pointer;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.controls button:hover {
+  background-color: #f0f0f0;
+}
+
+.controls button:last-child {
+  width: auto;
+  padding: 0 10px;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .map-legend {
+    padding: 0.5rem 1rem;
+    gap: 1rem;
+  }
+  .controls {
+    bottom: 1rem;
+    right: 1rem;
+  }
+}
