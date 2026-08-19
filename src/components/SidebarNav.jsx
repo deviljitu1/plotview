@@ -63,7 +63,6 @@ const SidebarNav = ({
         </div>
 
         <div className="sidebar-content">
-          {/* Action List */}
           <div className="sidebar-action-list">
             <button className="sidebar-action-item" onClick={handleShare} title="Share Project">
               {copied ? <Check size={20} color="#10b981" /> : <Share2 size={20} />}
@@ -76,11 +75,7 @@ const SidebarNav = ({
             <button className="sidebar-action-item" onClick={() => window.location.href = `tel:`} title="Contact Us">
               <img src={CallIcon} alt="Call" style={{ width: '22px', height: '22px' }} />
             </button>
-          </div>
 
-          <div className="sidebar-divider"></div>
-
-          <div className="sidebar-action-list">
             {/* Expandable Search */}
             <div className="sidebar-expandable">
               <button className={`sidebar-action-item ${expandedSection === 'search' ? 'active' : ''}`} onClick={() => toggleSection('search')} title="Search Plot">
