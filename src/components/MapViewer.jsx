@@ -61,8 +61,23 @@ const MapViewer = ({ project, plots: plotsData }) => {
           centerZoomedOut={true}
           limitToBounds={false}
           wheel={{ step: 0.08 }}
+          panning={{
+            velocityDisabled: true,
+            allowLeftClickPan: true,
+            excluded: ['button'],
+          }}
+          trackPadPanning={{
+            velocityDisabled: true,
+            excluded: ['button'],
+          }}
           pinch={{ step: 5 }}
-          doubleClick={{ mode: 'reset' }}
+          doubleClick={{ mode: 'reset', animationTime: 180 }}
+          velocityAnimation={{ disabled: true }}
+          zoomAnimation={{ animationTime: 180 }}
+          autoAlignment={{
+            animationTime: 160,
+            velocityAlignmentTime: 80,
+          }}
         >
           {({ zoomIn, zoomOut, resetTransform }) => (
             <>

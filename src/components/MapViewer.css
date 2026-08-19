@@ -45,6 +45,11 @@
   background: #fff;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
+  cursor: grab;
+}
+
+.map-viewer:active {
+  cursor: grabbing;
 }
 
 .transform-wrapper {
@@ -54,6 +59,7 @@
   min-height: calc(100vh - 120px);
   overflow: visible !important;
   touch-action: none;
+  cursor: inherit;
 }
 
 .transform-content {
@@ -77,6 +83,7 @@
   background: transparent;
   touch-action: none;
   user-select: none;
+  -webkit-user-drag: none;
 }
 
 .map-empty-state {
@@ -196,6 +203,9 @@
   .controls button:last-child {
     padding: 0 0.75rem;
     font-size: 0.82rem;
+  }
+  .map-viewer {
+    cursor: default;
   }
 }
 
