@@ -47,12 +47,11 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100%;
-  height: 100%;
 }
 
 .interactive-map {
-  max-width: 100%;
+  width: 100%;
+  height: auto;
   max-height: 100%;
   box-shadow: 0 0 20px rgba(0,0,0,0.1);
 }
