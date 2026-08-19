@@ -44,17 +44,25 @@ const MapViewer = ({ project, plots: plotsData }) => {
       </div>
 
       <div className="map-viewer">
-        <div className="controls">
-          <button onClick={zoomIn}>+</button>
-          <button onClick={zoomOut}>−</button>
-          <button onClick={resetTransform}>Reset</button>
-        </div>
-        
-        <svg
-          viewBox={`0 0 ${imgDim.width} ${imgDim.height}`}
-          className="interactive-map"
-          style={{ backgroundColor: '#f0f0f0', width: `${zoomLevel}%` }}
+        <TransformWrapper
+          initialScale={0.8}
+          minScale={0.3}
+          maxScale={4}
+          centerOnInit={true}
         >
+          {({ zoomIn, zoomOut, resetTransform }) => (
+            <>
+              <div className="controls">
+                <button onClick={() => zoomIn()}>+</button>
+                <button onClick={() => zoomOut()}>−</button>
+                <button onClick={() => resetTransform()}>Reset</button>
+              </div>
+              <TransformComponent wrapperClass="transform-wrapper" contentClass="transform-content">
+                <svg
+                  viewBox={`0 0 ${imgDim.width} ${imgDim.height}`}
+                  className="interactive-map"
+                  style={{ backgroundColor: 'transparent' }}
+                >
                   {/* Background Map Image */}
                   <image
                     href={project?.mapImageUrl}
@@ -81,6 +89,10 @@ const MapViewer = ({ project, plots: plotsData }) => {
                     </g>
                   ))}
                 </svg>
+              </TransformComponent>
+            </>
+          )}
+        </TransformWrapper>
       </div>
 
       {selectedPlot && (
