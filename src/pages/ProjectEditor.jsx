@@ -278,9 +278,19 @@ const ProjectEditor = () => {
     if (!mapImageFile) return mapImageUrl;
     setUploadingImage(true);
     try {
-      const storageRef = ref(storage, `projects/${projectId}/map.${mapImageFile.name.split('.').pop()}`);
-      await uploadBytes(storageRef, mapImageFile);
-      const url = await getDownloadURL(storageRef);
+      const formData = new FormData();
+      formData.append('file', mapImageFile);
+      formData.append('upload_preset', 'ml_default');
+
+      const res = await fetch('https://api.cloudinary.com/v1_1/djm7sh0zd/image/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+      
+      if (!res.ok) throw new Error(data.error?.message || 'Upload failed');
+      
+      const url = data.secure_url;
       setMapImageUrl(url);
       setUploadingImage(false);
       return url;
@@ -296,13 +306,28 @@ const ProjectEditor = () => {
     e.preventDefault();
     const file = e.dataTransfer?.files?.[0] || e.target?.files?.[0];
     if (file && file.type.startsWith('image/')) {
-      const projectId = id || uuidv4();
-      const storageRef = ref(storage, `projects/${projectId}/logo.${file.name.split('.').pop()}`);
-      await uploadBytes(storageRef, file);
-      const url = await getDownloadURL(storageRef);
-      setClientLogo(url);
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'ml_default');
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/djm7sh0zd/image/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        
+        if (res.ok) {
+          setClientLogo(data.secure_url);
+        } else {
+          console.error('Cloudinary Error:', data.error?.message);
+          alert('Failed to upload logo: ' + data.error?.message);
+        }
+      } catch (err) {
+        console.error('Upload failed:', err);
+      }
     }
-  }, [id]);
+  }, []);
 
   // Plot CRUD
   const addPlot = () => {
