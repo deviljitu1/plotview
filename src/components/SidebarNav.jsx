@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import { X, Share2, Phone, MessageCircle, Search, Filter, Check } from 'lucide-react';
+import { X, Share2, Search, Filter, Check } from 'lucide-react';
+import WhatsAppIcon from '../assets/whatsapp-color-svgrepo-com.svg';
+import CallIcon from '../assets/accept-call-icon.svg';
 import './SidebarNav.css';
 
 const SidebarNav = ({
@@ -68,11 +70,11 @@ const SidebarNav = ({
             </button>
 
             <button className="sidebar-action-item" onClick={handleWhatsApp} title="WhatsApp">
-              <MessageCircle size={20} color="#25D366" />
+              <img src={WhatsAppIcon} alt="WhatsApp" style={{ width: '22px', height: '22px' }} />
             </button>
 
             <button className="sidebar-action-item" onClick={() => window.location.href = `tel:`} title="Contact Us">
-              <Phone size={20} />
+              <img src={CallIcon} alt="Call" style={{ width: '22px', height: '22px' }} />
             </button>
           </div>
 
