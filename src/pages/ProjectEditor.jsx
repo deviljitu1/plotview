@@ -52,7 +52,7 @@ const ProjectEditor = () => {
 
   // Align Mode
   const [activeTab, setActiveTab] = useState('details');
-  const [draggingPoint, setDraggingPoint] = useState(null);
+  const [dragState, setDragState] = useState(null);
   const [selectedAlignPlot, setSelectedAlignPlot] = useState(null);
   const svgRef = useRef(null);
   const imgRef = useRef(null);
@@ -362,13 +362,30 @@ const ProjectEditor = () => {
   };
 
   // --- Align Mode Logic ---
-  const handlePointerDown = (e, plotId, pointIndex) => {
+  const handlePointPointerDown = (e, plotId, pointIndex) => {
     e.stopPropagation();
-    setDraggingPoint({ plotId, pointIndex });
+    setDragState({ type: 'point', plotId, pointIndex });
+  };
+
+  const handlePlotPointerDown = (e, plotId, pointsArr) => {
+    e.stopPropagation();
+    if (!svgRef.current) return;
+    const pt = svgRef.current.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const cursorPt = pt.matrixTransform(svgRef.current.getScreenCTM().inverse());
+    
+    setDragState({ 
+      type: 'plot', 
+      plotId, 
+      startX: cursorPt.x, 
+      startY: cursorPt.y, 
+      startPointsArr: pointsArr 
+    });
   };
 
   const handlePointerMove = useCallback((e) => {
-    if (!draggingPoint || !svgRef.current) return;
+    if (!dragState || !svgRef.current) return;
     const svg = svgRef.current;
     const pt = svg.createSVGPoint();
     pt.x = e.clientX;
@@ -376,17 +393,24 @@ const ProjectEditor = () => {
     const cursorPt = pt.matrixTransform(svg.getScreenCTM().inverse());
 
     setPlots(prev => prev.map(plot => {
-      if (plot.id === draggingPoint.plotId) {
-        const pointsArr = plot.points.trim().split(' ').map(p => p.split(',').map(Number));
-        pointsArr[draggingPoint.pointIndex] = [Math.round(cursorPt.x), Math.round(cursorPt.y)];
-        return { ...plot, points: pointsArr.map(p => p.join(',')).join(' ') };
+      if (plot.id === dragState.plotId) {
+        if (dragState.type === 'point') {
+          const pointsArr = plot.points.trim().split(' ').map(p => p.split(',').map(Number));
+          pointsArr[dragState.pointIndex] = [Math.round(cursorPt.x), Math.round(cursorPt.y)];
+          return { ...plot, points: pointsArr.map(p => p.join(',')).join(' ') };
+        } else if (dragState.type === 'plot') {
+          const dx = cursorPt.x - dragState.startX;
+          const dy = cursorPt.y - dragState.startY;
+          const pointsArr = dragState.startPointsArr.map(p => [Math.round(p[0] + dx), Math.round(p[1] + dy)]);
+          return { ...plot, points: pointsArr.map(p => p.join(',')).join(' ') };
+        }
       }
       return plot;
     }));
-  }, [draggingPoint]);
+  }, [dragState]);
 
   const handlePointerUp = useCallback(() => {
-    setDraggingPoint(null);
+    setDragState(null);
   }, []);
 
   useEffect(() => {
@@ -856,7 +880,12 @@ const ProjectEditor = () => {
                     ref={svgRef}
                     viewBox={`0 0 ${imgDimensions.width} ${imgDimensions.height}`}
                     className="align-svg"
-                    style={{ cursor: draggingPoint ? 'grabbing' : 'crosshair' }}
+                    style={{ cursor: dragState ? 'grabbing' : 'crosshair' }}
+                    onClick={(e) => {
+                      if (e.target === svgRef.current || e.target.tagName === 'image') {
+                        setSelectedAlignPlot(null);
+                      }
+                    }}
                   >
                     <image
                       href={imagePreview || mapImageUrl}
@@ -876,7 +905,11 @@ const ProjectEditor = () => {
                             fill={isHighlighted ? 'rgba(99,102,241,0.35)' : 'rgba(0,0,0,0.2)'}
                             stroke={isHighlighted ? '#6366f1' : 'rgba(255,255,255,0.7)'}
                             strokeWidth={isHighlighted ? 3 : 1.5}
-                            style={{ pointerEvents: 'none' }}
+                            style={{ pointerEvents: 'all', cursor: 'grab' }}
+                            onPointerDown={(e) => {
+                              setSelectedAlignPlot(plot.id);
+                              handlePlotPointerDown(e, plot.id, pointsArr);
+                            }}
                           />
                           {/* Draggable corner handles */}
                           {pointsArr.map((pt, idx) => (
@@ -891,7 +924,7 @@ const ProjectEditor = () => {
                               style={{ cursor: 'grab', pointerEvents: 'all' }}
                               onPointerDown={(e) => {
                                 setSelectedAlignPlot(plot.id);
-                                handlePointerDown(e, plot.id, idx);
+                                handlePointPointerDown(e, plot.id, idx);
                               }}
                             />
                           ))}
@@ -905,11 +938,9 @@ const ProjectEditor = () => {
                             textAnchor="middle"
                             alignmentBaseline="middle"
                             style={{ 
-                              pointerEvents: 'all', 
-                              cursor: 'pointer',
+                              pointerEvents: 'none', 
                               filter: 'drop-shadow(0 1px 2px rgba(0,0,0,0.8))'
                             }}
-                            onClick={() => setSelectedAlignPlot(plot.id === selectedAlignPlot ? null : plot.id)}
                           >
                             {plot.name}
                           </text>
