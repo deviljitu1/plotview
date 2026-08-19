@@ -5,15 +5,11 @@ import './MapViewer.css';
 
 const MapViewer = ({ project, plots: plotsData }) => {
   const [selectedPlot, setSelectedPlot] = useState(null);
-  const [zoomLevel, setZoomLevel] = useState(100);
+  const mapImageUrl = project?.mapImageUrl || project?.backgroundUrl || '';
 
   const handlePlotClick = (plot) => {
     setSelectedPlot(plot);
   };
-
-  const zoomIn = () => setZoomLevel(prev => Math.min(prev + 30, 400));
-  const zoomOut = () => setZoomLevel(prev => Math.max(prev - 30, 30));
-  const resetTransform = () => setZoomLevel(100);
 
   const getFillColor = (status) => {
     switch (status) {
@@ -25,6 +21,7 @@ const MapViewer = ({ project, plots: plotsData }) => {
   };
 
   const imgDim = project?.imgDimensions || { width: 1000, height: 750 };
+  const hasPlots = Array.isArray(plotsData) && plotsData.length > 0;
 
   return (
     <div className="map-viewer-wrap">
@@ -44,6 +41,18 @@ const MapViewer = ({ project, plots: plotsData }) => {
       </div>
 
       <div className="map-viewer">
+        {!mapImageUrl && (
+          <div className="map-empty-state">
+            <h2>Map image missing</h2>
+            <p>This project is saved, but no map image is attached yet.</p>
+          </div>
+        )}
+        {mapImageUrl && !hasPlots && (
+          <div className="map-empty-state">
+            <h2>No plots added</h2>
+            <p>The map is available, but no plot boundaries have been saved.</p>
+          </div>
+        )}
         <TransformWrapper
           initialScale={0.8}
           minScale={0.3}
@@ -61,18 +70,21 @@ const MapViewer = ({ project, plots: plotsData }) => {
                 <svg
                   viewBox={`0 0 ${imgDim.width} ${imgDim.height}`}
                   className="interactive-map"
-                  style={{ backgroundColor: 'transparent' }}
+                  style={{
+                    backgroundColor: 'transparent',
+                    aspectRatio: `${imgDim.width} / ${imgDim.height}`,
+                  }}
                 >
                   {/* Background Map Image */}
                   <image
-                    href={project?.mapImageUrl}
+                    href={mapImageUrl}
                     width={imgDim.width}
                     height={imgDim.height}
                     style={{ pointerEvents: 'none', userSelect: 'none' }}
                   />
 
                   {/* Interactive Plot Overlays */}
-                  {plotsData && plotsData.map((plot) => (
+                  {hasPlots && plotsData.map((plot) => (
                     <g key={plot.id} onClick={() => handlePlotClick(plot)} className="plot-group">
                       <polygon
                         points={plot.points}
