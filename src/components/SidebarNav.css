@@ -178,3 +178,32 @@
 .popout-select:focus {
   border-color: var(--brand-color, #6366f1);
 }
+
+.filter-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  background: #ef4444;
+  border-radius: 50%;
+  border: 1px solid #fff;
+}
+
+.btn-clear-filter {
+  margin-top: 0.25rem;
+  padding: 0.6rem;
+  background: #fee2e2;
+  color: #ef4444;
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-clear-filter:hover {
+  background: #fecaca;
+}

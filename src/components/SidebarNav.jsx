@@ -19,6 +19,12 @@ const SidebarNav = ({
   const [copied, setCopied] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null); // 'search', 'filter', or null
 
+  React.useEffect(() => {
+    if (!isOpen) {
+      setExpandedSection(null);
+    }
+  }, [isOpen]);
+
   const handleShare = async () => {
     try {
       if (navigator.share) {
@@ -98,6 +104,9 @@ const SidebarNav = ({
             <div className="sidebar-expandable">
               <button className={`sidebar-action-item ${expandedSection === 'filter' ? 'active' : ''}`} onClick={() => toggleSection('filter')} title="Filter Map">
                 <Filter size={20} />
+                {(filterType !== 'All' || filterStatus !== 'All') && (
+                  <span className="filter-badge" />
+                )}
               </button>
               <div className={`popout-content ${expandedSection === 'filter' ? 'expanded' : ''}`}>
                 <div className="popout-filter-inputs">
@@ -121,6 +130,19 @@ const SidebarNav = ({
                     <option value="Booked">Booked</option>
                     <option value="Sold">Sold</option>
                   </select>
+
+                  {(filterType !== 'All' || filterStatus !== 'All' || searchQuery !== '') && (
+                    <button 
+                      className="btn-clear-filter"
+                      onClick={() => {
+                        setFilterType('All');
+                        setFilterStatus('All');
+                        setSearchQuery('');
+                      }}
+                    >
+                      Clear All Filters
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
