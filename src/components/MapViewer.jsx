@@ -4,13 +4,9 @@ import { Search, Filter, X } from 'lucide-react';
 import PlotDetailsModal from './PlotDetailsModal';
 import './MapViewer.css';
 
-const MapViewer = ({ project, plots: plotsData }) => {
+const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterStatus }) => {
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [containerSize, setContainerSize] = useState(null);
-  const [filterType, setFilterType] = useState('All');
-  const [filterStatus, setFilterStatus] = useState('All');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const containerRef = useRef(null);
   const mapImageUrl = project?.mapImageUrl || project?.backgroundUrl || '';
 
@@ -78,42 +74,6 @@ const MapViewer = ({ project, plots: plotsData }) => {
 
   return (
     <div className="map-viewer-wrap">
-      {/* Floating Modern UI over the map */}
-      <div className={`map-floating-ui ${isFiltersOpen ? 'expanded' : ''}`}>
-        <button 
-          className="filter-toggle-btn" 
-          onClick={() => setIsFiltersOpen(!isFiltersOpen)}
-          aria-label="Toggle Filters"
-        >
-          {isFiltersOpen ? <X size={16} /> : <Filter size={16} />}
-          <span>{isFiltersOpen ? 'Close' : 'Search & Filter'}</span>
-        </button>
-
-        <div className="map-filters-glass">
-          <div className="filter-search-glass">
-            <Search size={16} className="search-icon-glass" />
-            <input
-              type="text"
-              placeholder="Search plot..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="filter-select-glass">
-            {plotTypes.map(type => (
-              <option key={type} value={type}>{type === 'All' ? 'All Types' : type}</option>
-            ))}
-          </select>
-          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="filter-select-glass">
-            <option value="All">All Statuses</option>
-            <option value="Available">Available</option>
-            <option value="Booked">Booked</option>
-            <option value="Sold">Sold</option>
-          </select>
-        </div>
-      </div>
-
-
       <div className="map-viewer" ref={containerRef}>
         {!mapImageUrl && (
           <div className="map-empty-state">

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { collection, getDocs, query, where } from 'firebase/firestore';
-import { Share2, Check } from 'lucide-react';
+import { Menu } from 'lucide-react';
 import { db } from '../lib/firebase';
 import MapViewer from '../components/MapViewer';
+import SidebarNav from '../components/SidebarNav';
 import './ProjectViewer.css';
 
 const ProjectViewer = () => {
@@ -12,7 +13,12 @@ const ProjectViewer = () => {
   const [plots, setPlots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [copied, setCopied] = useState(false);
+  
+  // Filter & UI States
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState('All');
+  const [filterStatus, setFilterStatus] = useState('All');
 
   useEffect(() => {
     loadProject();
@@ -46,22 +52,7 @@ const ProjectViewer = () => {
     }
   };
 
-  const handleShare = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: project?.name || 'Real Estate Project',
-          url: window.location.href,
-        });
-      } else {
-        await navigator.clipboard.writeText(window.location.href);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }
-    } catch (err) {
-      console.error('Error sharing:', err);
-    }
-  };
+  const plotTypes = ['All', ...new Set(plots.map(p => p.type).filter(Boolean))];
 
   if (loading) {
     return (
@@ -110,16 +101,31 @@ const ProjectViewer = () => {
         </div>
 
         <div className="viewer-actions">
-          <button className="btn-share" onClick={handleShare} aria-label="Share project">
-            {copied ? <Check size={18} color="#10b981" /> : <Share2 size={18} />}
-            <span className="share-text">{copied ? 'Copied!' : 'Share'}</span>
+          <button className="btn-menu" onClick={() => setIsMenuOpen(true)} aria-label="Open menu">
+            <Menu size={24} color="#333" />
           </button>
         </div>
       </div>
 
+      <SidebarNav 
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        project={project}
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        filterType={filterType}
+        setFilterType={setFilterType}
+        filterStatus={filterStatus}
+        setFilterStatus={setFilterStatus}
+        plotTypes={plotTypes}
+      />
+
       <MapViewer
         project={project}
         plots={plots}
+        searchQuery={searchQuery}
+        filterType={filterType}
+        filterStatus={filterStatus}
       />
     </div>
   );
