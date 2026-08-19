@@ -35,7 +35,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: #ffffff;
+  background-color: #e5e7eb;
 }
 
 .transform-wrapper {
@@ -51,8 +51,9 @@
 
 .interactive-map {
   max-width: 100%;
-  max-height: 100%;
+  max-height: 85vh;
   box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  background-color: #ffffff;
 }
 
 .plot-group {
