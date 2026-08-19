@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc, collection, getDocs, writeBatch, deleteDoc } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../lib/firebase';
 import { v4 as uuidv4 } from 'uuid';
+import * as XLSX from 'xlsx';
 import PlotDetailsModal from '../components/PlotDetailsModal';
 import './ProjectEditor.css';
 
@@ -34,6 +35,19 @@ const ProjectEditor = () => {
   const [plotForm, setPlotForm] = useState({
     name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: ''
   });
+
+  // Bulk Import
+  const [importPreview, setImportPreview] = useState(null); // parsed rows for preview
+  const [importErrors, setImportErrors] = useState([]);
+
+  // Bulk Select
+  const [selectedPlots, setSelectedPlots] = useState(new Set());
+  const [bulkStatus, setBulkStatus] = useState('');
+
+  // Search & Filter
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterStatus, setFilterStatus] = useState('All');
+  const [filterType, setFilterType] = useState('All');
 
   // Align Mode
   const [activeTab, setActiveTab] = useState('details');
@@ -87,6 +101,158 @@ const ProjectEditor = () => {
       setSlug(projectName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
     }
   }, [projectName, isEditing]);
+
+  // ==================== STATS ====================
+  const stats = useMemo(() => {
+    const total = plots.length;
+    const available = plots.filter(p => p.status === 'Available').length;
+    const booked = plots.filter(p => p.status === 'Booked').length;
+    const sold = plots.filter(p => p.status === 'Sold').length;
+    return { total, available, booked, sold };
+  }, [plots]);
+
+  // ==================== FILTERED PLOTS ====================
+  const filteredPlots = useMemo(() => {
+    return plots.filter(p => {
+      const matchSearch = !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchStatus = filterStatus === 'All' || p.status === filterStatus;
+      const matchType = filterType === 'All' || p.type === filterType;
+      return matchSearch && matchStatus && matchType;
+    });
+  }, [plots, searchTerm, filterStatus, filterType]);
+
+  // ==================== EXCEL IMPORT ====================
+  const handleExcelImport = (e) => {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const wb = XLSX.read(evt.target.result, { type: 'array' });
+        const ws = wb.Sheets[wb.SheetNames[0]];
+        const rawData = XLSX.utils.sheet_to_json(ws, { defval: '' });
+        
+        // Normalize column headers (case-insensitive matching)
+        const errors = [];
+        const parsed = rawData.map((row, idx) => {
+          const normalized = {};
+          Object.keys(row).forEach(key => {
+            const k = key.toLowerCase().trim();
+            if (k.includes('name') || k === 'plot') normalized.name = String(row[key]).trim();
+            else if (k.includes('area') || k.includes('sqft') || k.includes('sq ft')) normalized.area = Number(row[key]) || 0;
+            else if (k.includes('size') || k.includes('dimension')) normalized.size = String(row[key]).trim();
+            else if (k === 'type' || k.includes('category')) normalized.type = String(row[key]).trim() || 'Plot';
+            else if (k === 'status') normalized.status = String(row[key]).trim() || 'Available';
+            else if (k.includes('facing') || k.includes('direction')) normalized.facing = String(row[key]).trim() || 'East';
+          });
+
+          // Validate
+          if (!normalized.name) {
+            errors.push(`Row ${idx + 2}: Missing plot name`);
+          }
+
+          // Validate status
+          const validStatuses = ['Available', 'Booked', 'Sold'];
+          if (normalized.status && !validStatuses.includes(normalized.status)) {
+            // Try case-insensitive match
+            const match = validStatuses.find(s => s.toLowerCase() === normalized.status.toLowerCase());
+            normalized.status = match || 'Available';
+          }
+
+          return {
+            id: uuidv4(),
+            name: normalized.name || `Plot ${idx + 1}`,
+            area: normalized.area || 0,
+            size: normalized.size || '',
+            type: normalized.type || 'Plot',
+            status: normalized.status || 'Available',
+            facing: normalized.facing || 'East',
+            points: '100,100 200,100 200,200 100,200'
+          };
+        });
+
+        setImportPreview(parsed);
+        setImportErrors(errors);
+      } catch (err) {
+        alert('Error reading file: ' + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+    // Reset the input so the same file can be re-selected
+    e.target.value = '';
+  };
+
+  const confirmImport = () => {
+    if (!importPreview) return;
+    setPlots(prev => [...prev, ...importPreview]);
+    setImportPreview(null);
+    setImportErrors([]);
+  };
+
+  const cancelImport = () => {
+    setImportPreview(null);
+    setImportErrors([]);
+  };
+
+  // ==================== EXCEL EXPORT ====================
+  const handleExcelExport = () => {
+    if (plots.length === 0) return alert('No plots to export.');
+    const data = plots.map(p => ({
+      'Plot Name': p.name,
+      'Area (sq ft)': p.area,
+      'Size': p.size,
+      'Type': p.type,
+      'Status': p.status,
+      'Facing': p.facing
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Plots');
+    XLSX.writeFile(wb, `${projectName || 'plots'}_data.xlsx`);
+  };
+
+  const downloadTemplate = () => {
+    const template = [
+      { 'Plot Name': 'Plot 1', 'Area (sq ft)': 1200, 'Size': "40' x 30'", 'Type': 'Plot', 'Status': 'Available', 'Facing': 'East' },
+      { 'Plot Name': 'Plot 2', 'Area (sq ft)': 1500, 'Size': "50' x 30'", 'Type': 'LIG', 'Status': 'Booked', 'Facing': 'North' },
+    ];
+    const ws = XLSX.utils.json_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Template');
+    XLSX.writeFile(wb, 'PlotView_Import_Template.xlsx');
+  };
+
+  // ==================== BULK STATUS UPDATE ====================
+  const toggleSelectPlot = (plotId) => {
+    setSelectedPlots(prev => {
+      const next = new Set(prev);
+      if (next.has(plotId)) next.delete(plotId);
+      else next.add(plotId);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedPlots.size === filteredPlots.length) {
+      setSelectedPlots(new Set());
+    } else {
+      setSelectedPlots(new Set(filteredPlots.map(p => p.id)));
+    }
+  };
+
+  const applyBulkStatus = () => {
+    if (!bulkStatus || selectedPlots.size === 0) return;
+    setPlots(prev => prev.map(p => selectedPlots.has(p.id) ? { ...p, status: bulkStatus } : p));
+    setSelectedPlots(new Set());
+    setBulkStatus('');
+  };
+
+  const bulkDeleteSelected = () => {
+    if (selectedPlots.size === 0) return;
+    if (!window.confirm(`Delete ${selectedPlots.size} selected plot(s)?`)) return;
+    setPlots(prev => prev.filter(p => !selectedPlots.has(p.id)));
+    setSelectedPlots(new Set());
+  };
 
   // Image handling
   const handleImageDrop = useCallback((e) => {
@@ -385,6 +551,90 @@ const ProjectEditor = () => {
         {/* ======================== TAB: PLOTS ======================== */}
         {activeTab === 'plots' && (
           <div className="tab-content">
+
+            {/* ===== STATS CARDS ===== */}
+            <div className="stats-row">
+              <div className="stat-card">
+                <span className="stat-number">{stats.total}</span>
+                <span className="stat-label">Total Plots</span>
+              </div>
+              <div className="stat-card stat-available">
+                <span className="stat-number">{stats.available}</span>
+                <span className="stat-label">Available</span>
+              </div>
+              <div className="stat-card stat-booked">
+                <span className="stat-number">{stats.booked}</span>
+                <span className="stat-label">Booked</span>
+              </div>
+              <div className="stat-card stat-sold">
+                <span className="stat-number">{stats.sold}</span>
+                <span className="stat-label">Sold</span>
+              </div>
+              {stats.total > 0 && (
+                <div className="stat-card stat-progress">
+                  <div className="progress-bar">
+                    <div className="progress-sold" style={{ width: `${(stats.sold / stats.total) * 100}%` }}></div>
+                    <div className="progress-booked" style={{ width: `${(stats.booked / stats.total) * 100}%` }}></div>
+                  </div>
+                  <span className="stat-label">{Math.round(((stats.sold + stats.booked) / stats.total) * 100)}% Sold/Booked</span>
+                </div>
+              )}
+            </div>
+
+            {/* ===== IMPORT / EXPORT BAR ===== */}
+            <div className="import-export-bar">
+              <div className="ie-left">
+                <label className="import-btn">
+                  📥 Import Excel/CSV
+                  <input type="file" accept=".xlsx,.xls,.csv" onChange={handleExcelImport} hidden />
+                </label>
+                <button className="template-btn" onClick={downloadTemplate}>📄 Download Template</button>
+              </div>
+              <div className="ie-right">
+                <button className="export-btn" onClick={handleExcelExport} disabled={plots.length === 0}>
+                  📤 Export to Excel
+                </button>
+              </div>
+            </div>
+
+            {/* ===== IMPORT PREVIEW ===== */}
+            {importPreview && (
+              <div className="import-preview-section">
+                <h3>📋 Import Preview — {importPreview.length} plot(s) found</h3>
+                {importErrors.length > 0 && (
+                  <div className="import-errors">
+                    {importErrors.map((err, i) => <p key={i}>⚠️ {err}</p>)}
+                  </div>
+                )}
+                <div className="plots-table-wrapper" style={{maxHeight: '300px'}}>
+                  <table className="plots-table">
+                    <thead>
+                      <tr>
+                        <th>Name</th><th>Area</th><th>Size</th><th>Type</th><th>Status</th><th>Facing</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {importPreview.map((p, i) => (
+                        <tr key={i} className={!p.name ? 'row-error' : ''}>
+                          <td>{p.name}</td>
+                          <td>{p.area}</td>
+                          <td>{p.size}</td>
+                          <td>{p.type}</td>
+                          <td><span className={`status-badge ${p.status.toLowerCase()}`}>{p.status}</span></td>
+                          <td>{p.facing}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className="import-actions">
+                  <button className="btn-primary" onClick={confirmImport}>✅ Import All ({importPreview.length})</button>
+                  <button className="btn-secondary" onClick={cancelImport}>Cancel</button>
+                </div>
+              </div>
+            )}
+
+            {/* ===== ADD / EDIT PLOT FORM ===== */}
             <div className="form-section">
               <h3>{editingPlot !== null ? 'Edit Plot' : 'Add New Plot'}</h3>
               <div className="form-grid">
@@ -446,15 +696,61 @@ const ProjectEditor = () => {
               </div>
             </div>
 
+            {/* ===== SEARCH & FILTER BAR ===== */}
             <div className="form-section">
-              <h3>Plots ({plots.length})</h3>
+              <div className="search-filter-bar">
+                <input
+                  className="search-input"
+                  type="text"
+                  placeholder="🔍 Search plots by name..."
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                />
+                <select className="filter-select" value={filterStatus} onChange={e => setFilterStatus(e.target.value)}>
+                  <option value="All">All Status</option>
+                  <option value="Available">Available</option>
+                  <option value="Booked">Booked</option>
+                  <option value="Sold">Sold</option>
+                </select>
+                <select className="filter-select" value={filterType} onChange={e => setFilterType(e.target.value)}>
+                  <option value="All">All Types</option>
+                  <option value="Plot">Plot</option>
+                  <option value="LIG">LIG</option>
+                  <option value="EWS">EWS</option>
+                  <option value="Commercial">Commercial</option>
+                </select>
+              </div>
+
+              {/* ===== BULK ACTIONS BAR ===== */}
+              {selectedPlots.size > 0 && (
+                <div className="bulk-actions-bar">
+                  <span className="bulk-count">{selectedPlots.size} selected</span>
+                  <select value={bulkStatus} onChange={e => setBulkStatus(e.target.value)} className="bulk-status-select">
+                    <option value="">Change Status…</option>
+                    <option value="Available">Available</option>
+                    <option value="Booked">Booked</option>
+                    <option value="Sold">Sold</option>
+                  </select>
+                  <button className="btn-primary btn-sm" onClick={applyBulkStatus} disabled={!bulkStatus}>Apply</button>
+                  <button className="btn-danger btn-sm" onClick={bulkDeleteSelected}>🗑️ Delete Selected</button>
+                </div>
+              )}
+
+              <h3>Plots ({filteredPlots.length}{filteredPlots.length !== plots.length ? ` of ${plots.length}` : ''})</h3>
               {plots.length === 0 ? (
-                <p className="no-plots">No plots added yet. Add your first plot above.</p>
+                <p className="no-plots">No plots added yet. Add your first plot above, or import from an Excel file.</p>
               ) : (
                 <div className="plots-table-wrapper">
                   <table className="plots-table">
                     <thead>
                       <tr>
+                        <th style={{ width: 40 }}>
+                          <input
+                            type="checkbox"
+                            checked={selectedPlots.size === filteredPlots.length && filteredPlots.length > 0}
+                            onChange={toggleSelectAll}
+                          />
+                        </th>
                         <th>Name</th>
                         <th>Area</th>
                         <th>Size</th>
@@ -465,20 +761,30 @@ const ProjectEditor = () => {
                       </tr>
                     </thead>
                     <tbody>
-                      {plots.map((plot, idx) => (
-                        <tr key={plot.id}>
-                          <td>{plot.name}</td>
-                          <td>{plot.area} sq ft</td>
-                          <td>{plot.size}</td>
-                          <td><span className={`type-badge ${plot.type.toLowerCase()}`}>{plot.type}</span></td>
-                          <td><span className={`status-badge ${plot.status.toLowerCase()}`}>{plot.status}</span></td>
-                          <td>{plot.facing}</td>
-                          <td>
-                            <button className="table-btn edit" onClick={() => startEditPlot(idx)}>Edit</button>
-                            <button className="table-btn delete" onClick={() => deletePlot(idx)}>Delete</button>
-                          </td>
-                        </tr>
-                      ))}
+                      {filteredPlots.map((plot) => {
+                        const realIdx = plots.findIndex(p => p.id === plot.id);
+                        return (
+                          <tr key={plot.id} className={selectedPlots.has(plot.id) ? 'row-selected' : ''}>
+                            <td>
+                              <input
+                                type="checkbox"
+                                checked={selectedPlots.has(plot.id)}
+                                onChange={() => toggleSelectPlot(plot.id)}
+                              />
+                            </td>
+                            <td>{plot.name}</td>
+                            <td>{plot.area} sq ft</td>
+                            <td>{plot.size}</td>
+                            <td><span className={`type-badge ${plot.type.toLowerCase()}`}>{plot.type}</span></td>
+                            <td><span className={`status-badge ${plot.status.toLowerCase()}`}>{plot.status}</span></td>
+                            <td>{plot.facing}</td>
+                            <td>
+                              <button className="table-btn edit" onClick={() => startEditPlot(realIdx)}>Edit</button>
+                              <button className="table-btn delete" onClick={() => deletePlot(realIdx)}>Delete</button>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
