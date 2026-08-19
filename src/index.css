@@ -6,6 +6,13 @@
   box-sizing: border-box;
 }
 
+html, body, #root {
+  height: 100dvh;
+  height: 100vh; /* fallback */
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
