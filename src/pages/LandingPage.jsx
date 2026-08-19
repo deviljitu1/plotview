@@ -25,9 +25,8 @@ const LandingPage = () => {
           <div className="hero-badge">Interactive Real Estate Brochures</div>
           <h1>Showcase Your Projects<br/>Like Never Before</h1>
           <p>
-            Create stunning, interactive plot maps for your real estate projects. 
-            Upload your master plan, mark individual plots, and share beautiful 
-            brochures with your clients — all from one powerful platform.
+            Send us your master plan and we will convert it into a stunning, interactive plot map. 
+            We handle all the technical details and deliver a ready-to-share custom URL for your buyers.
           </p>
           <div className="hero-cta">
             <a href="#contact" className="cta-primary">Get in Touch</a>
@@ -56,6 +55,28 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
+        </div>
+      </section>
+
+      <section className="how-it-works">
+        <h2>How It Works</h2>
+        <div className="steps-container">
+          <div className="step-card">
+            <div className="step-number">1</div>
+            <h3>Send Your Assets</h3>
+            <p>Provide us with your rendered 2D/3D master plan and the details for each plot (size, status, facing).</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">2</div>
+            <h3>We Build It</h3>
+            <p>Our team expertly maps the plot boundaries, adds interactive elements, and customizes it to your brand.</p>
+          </div>
+          <div className="step-card">
+            <div className="step-number">3</div>
+            <h3>Get Your Link</h3>
+            <p>Receive a beautiful, white-labeled URL. Share it instantly with your clients via WhatsApp or email.</p>
+          </div>
+        </div>
       </section>
 
       <section className="features">
@@ -63,13 +84,13 @@ const LandingPage = () => {
         <div className="features-grid">
           <div className="feature-card">
             <div className="feature-icon" style={{background: 'rgba(16,185,129,0.15)', color: '#10b981'}}>📸</div>
-            <h3>Upload Map Images</h3>
-            <p>Drag & drop your rendered master plan or blueprint image. Supports PNG, JPG, WebP.</p>
+            <h3>Hassle-Free Setup</h3>
+            <p>You don't need to learn any software. Just send us your rendered master plan and we do the heavy lifting.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon" style={{background: 'rgba(99,102,241,0.15)', color: '#6366f1'}}>📐</div>
-            <h3>Visual Alignment</h3>
-            <p>Drag plot boundaries directly onto your image for pixel-perfect interactive overlays.</p>
+            <h3>Pixel-Perfect Accuracy</h3>
+            <p>Our team ensures every plot boundary is perfectly aligned and beautifully highlighted on your map.</p>
           </div>
           <div className="feature-card">
             <div className="feature-icon" style={{background: 'rgba(245,158,11,0.15)', color: '#f59e0b'}}>📊</div>
@@ -97,7 +118,7 @@ const LandingPage = () => {
       <section id="contact" className="contact-section">
         <div className="contact-card">
           <h2>Ready to digitize your real estate projects?</h2>
-          <p>Get in touch with us to start building your interactive brochures.</p>
+          <p>Get in touch with us. Send your master plan, and we'll deliver your interactive brochure.</p>
           <div className="contact-links">
             <a href="mailto:hello@plotview.app" className="contact-link email-link">
               <span className="icon">✉️</span> hello@plotview.app
