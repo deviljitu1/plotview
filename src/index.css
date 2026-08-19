@@ -8,6 +8,8 @@
 
 html, body, #root {
   min-height: 100vh;
+  overflow-y: auto !important;
+  overflow-x: hidden;
 }
 
 body {
