@@ -55,7 +55,6 @@ const LandingPage = () => {
             </div>
           </div>
         </div>
-        </div>
       </section>
 
       <section className="how-it-works">
