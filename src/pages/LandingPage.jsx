@@ -16,7 +16,7 @@ const LandingPage = () => {
           </svg>
           <span>PlotView</span>
         </div>
-        <Link to="/admin/login" className="landing-login-btn">Admin Login</Link>
+        <a href="#contact" className="landing-login-btn">Contact Us</a>
       </nav>
 
       <section className="hero">
@@ -30,7 +30,7 @@ const LandingPage = () => {
             brochures with your clients — all from one powerful platform.
           </p>
           <div className="hero-cta">
-            <Link to="/admin/login" className="cta-primary">Get Started</Link>
+            <a href="#contact" className="cta-primary">Get in Touch</a>
           </div>
         </div>
 
@@ -90,6 +90,21 @@ const LandingPage = () => {
             <div className="feature-icon" style={{background: 'rgba(20,184,166,0.15)', color: '#14b8a6'}}>📱</div>
             <h3>Mobile First</h3>
             <p>Every brochure looks stunning on desktop, tablet, and mobile. Pan, zoom, and tap.</p>
+          </div>
+        </div>
+      </section>
+
+      <section id="contact" className="contact-section">
+        <div className="contact-card">
+          <h2>Ready to digitize your real estate projects?</h2>
+          <p>Get in touch with us to start building your interactive brochures.</p>
+          <div className="contact-links">
+            <a href="mailto:hello@plotview.app" className="contact-link email-link">
+              <span className="icon">✉️</span> hello@plotview.app
+            </a>
+            <a href="https://wa.me/" className="contact-link wa-link" target="_blank" rel="noreferrer">
+              <span className="icon">💬</span> Message on WhatsApp
+            </a>
           </div>
         </div>
       </section>
