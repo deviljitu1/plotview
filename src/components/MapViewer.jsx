@@ -1,11 +1,15 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import { Search } from 'lucide-react';
 import PlotDetailsModal from './PlotDetailsModal';
 import './MapViewer.css';
 
 const MapViewer = ({ project, plots: plotsData }) => {
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [containerSize, setContainerSize] = useState(null);
+  const [filterType, setFilterType] = useState('All');
+  const [filterStatus, setFilterStatus] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
   const containerRef = useRef(null);
   const mapImageUrl = project?.mapImageUrl || project?.backgroundUrl || '';
 
@@ -24,6 +28,15 @@ const MapViewer = ({ project, plots: plotsData }) => {
 
   const imgDim = project?.imgDimensions || { width: 1000, height: 750 };
   const hasPlots = Array.isArray(plotsData) && plotsData.length > 0;
+
+  const plotTypes = ['All', ...new Set((plotsData || []).map(p => p.type).filter(Boolean))];
+
+  const isPlotVisible = (plot) => {
+    if (filterType !== 'All' && plot.type !== filterType) return false;
+    if (filterStatus !== 'All' && plot.status !== filterStatus) return false;
+    if (searchQuery && !plot.name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    return true;
+  };
 
   // Measure the container and compute the SVG pixel dimensions that fit
   const measure = useCallback(() => {
@@ -64,20 +77,46 @@ const MapViewer = ({ project, plots: plotsData }) => {
 
   return (
     <div className="map-viewer-wrap">
-      <div className="map-legend">
-        <div className="legend-item">
-          <div className="legend-color" style={{ backgroundColor: 'rgba(16, 185, 129, 0.8)' }}></div>
-          <span>Available</span>
+      <div className="map-filters-container">
+        <div className="map-legend">
+          <div className="legend-item">
+            <div className="legend-color" style={{ backgroundColor: 'rgba(16, 185, 129, 0.8)' }}></div>
+            <span>Available</span>
+          </div>
+          <div className="legend-item">
+            <div className="legend-color" style={{ backgroundColor: 'rgba(245, 158, 11, 0.8)' }}></div>
+            <span>Booked</span>
+          </div>
+          <div className="legend-item">
+            <div className="legend-color" style={{ backgroundColor: 'rgba(239, 68, 68, 0.8)' }}></div>
+            <span>Sold</span>
+          </div>
         </div>
-        <div className="legend-item">
-          <div className="legend-color" style={{ backgroundColor: 'rgba(245, 158, 11, 0.8)' }}></div>
-          <span>Booked</span>
-        </div>
-        <div className="legend-item">
-          <div className="legend-color" style={{ backgroundColor: 'rgba(239, 68, 68, 0.8)' }}></div>
-          <span>Sold</span>
+
+        <div className="map-filters">
+          <div className="filter-search">
+            <Search size={14} className="search-icon" />
+            <input
+              type="text"
+              placeholder="Search plot..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+          <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="filter-select">
+            {plotTypes.map(type => (
+              <option key={type} value={type}>{type === 'All' ? 'All Types' : type}</option>
+            ))}
+          </select>
+          <select value={filterStatus} onChange={(e) => setFilterStatus(e.target.value)} className="filter-select">
+            <option value="All">All Statuses</option>
+            <option value="Available">Available</option>
+            <option value="Booked">Booked</option>
+            <option value="Sold">Sold</option>
+          </select>
         </div>
       </div>
+
 
       <div className="map-viewer" ref={containerRef}>
         {!mapImageUrl && (
@@ -147,22 +186,31 @@ const MapViewer = ({ project, plots: plotsData }) => {
                     />
 
                     {/* Interactive Plot Overlays */}
-                    {hasPlots && plotsData.map((plot) => (
-                      <g key={plot.id} onClick={() => handlePlotClick(plot)} className="plot-group">
-                        <polygon
-                          points={plot.points}
-                          fill={getFillColor(plot.status)}
-                          stroke="rgba(255,255,255,0.6)"
-                          strokeWidth="1.5"
-                          className="plot-polygon"
-                        />
-                        <polygon
-                          points={plot.points}
-                          fill="transparent"
-                          className="plot-polygon-hover"
-                        />
-                      </g>
-                    ))}
+                    {hasPlots && plotsData.map((plot) => {
+                      const visible = isPlotVisible(plot);
+                      return (
+                        <g 
+                          key={plot.id} 
+                          onClick={visible ? () => handlePlotClick(plot) : undefined} 
+                          className={`plot-group ${visible ? '' : 'plot-hidden'}`}
+                        >
+                          <polygon
+                            points={plot.points}
+                            fill={visible ? getFillColor(plot.status) : 'rgba(0,0,0,0.1)'}
+                            stroke={visible ? 'rgba(255,255,255,0.6)' : 'transparent'}
+                            strokeWidth="1.5"
+                            className="plot-polygon"
+                          />
+                          {visible && (
+                            <polygon
+                              points={plot.points}
+                              fill="transparent"
+                              className="plot-polygon-hover"
+                            />
+                          )}
+                        </g>
+                      );
+                    })}
                   </svg>
                 </TransformComponent>
               </>

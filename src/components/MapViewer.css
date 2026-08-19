@@ -7,17 +7,71 @@
   min-height: 0;
 }
 
-/* ── Legend bar ─────────────────────────────────── */
+/* ── Filters & Legend ──────────────────────────── */
+.map-filters-container {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  flex-shrink: 0;
+  z-index: 30;
+}
+
 .map-legend {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
   gap: 1.25rem;
   padding: 0.5rem 1rem;
+}
+
+.map-filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0 1rem 0.75rem;
+}
+
+.filter-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.filter-search input {
+  padding: 0.35rem 0.5rem 0.35rem 1.8rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  outline: none;
+  font-family: 'Inter', sans-serif;
+  width: 140px;
+}
+
+.filter-search input:focus {
+  border-color: var(--brand-color, #6366f1);
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.5rem;
+  color: #888;
+}
+
+.filter-select {
+  padding: 0.35rem 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  outline: none;
   background: #fff;
-  border-bottom: 1px solid #eee;
-  flex-shrink: 0;
-  z-index: 30;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+}
+
+.filter-select:focus {
+  border-color: var(--brand-color, #6366f1);
 }
 
 .legend-item {
@@ -114,6 +168,11 @@
 /* ── Plot polygons ─────────────────────────────── */
 .plot-group {
   cursor: pointer;
+}
+
+.plot-hidden {
+  opacity: 0.2;
+  pointer-events: none;
 }
 
 .plot-polygon {
