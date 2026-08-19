@@ -31,11 +31,11 @@
 .map-viewer {
   flex: 1;
   position: relative;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  overflow: auto;
+  display: block;
+  text-align: center;
   background-color: #e5e7eb;
+  padding: 2rem;
 }
 
 .transform-wrapper {
@@ -50,10 +50,10 @@
 }
 
 .interactive-map {
-  width: 100%;
   height: auto;
-  max-height: 100%;
   box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  margin: 0 auto;
+  transition: width 0.3s ease-out;
 }
 
 .plot-group {
