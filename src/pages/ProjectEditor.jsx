@@ -61,6 +61,7 @@ const ProjectEditor = () => {
   // Bulk Select
   const [selectedPlots, setSelectedPlots] = useState(new Set());
   const [bulkStatus, setBulkStatus] = useState('');
+  const [bulkFacing, setBulkFacing] = useState('');
 
   // Search & Filter
   const [searchTerm, setSearchTerm] = useState('');
@@ -275,6 +276,13 @@ const ProjectEditor = () => {
     setPlots(prev => prev.map(p => selectedPlots.has(p.id) ? { ...p, status: bulkStatus } : p));
     setSelectedPlots(new Set());
     setBulkStatus('');
+  };
+
+  const applyBulkFacing = () => {
+    if (!bulkFacing || selectedPlots.size === 0) return;
+    setPlots(prev => prev.map(p => selectedPlots.has(p.id) ? { ...p, facing: bulkFacing } : p));
+    setSelectedPlots(new Set());
+    setBulkFacing('');
   };
 
   const bulkDeleteSelected = () => {
@@ -935,14 +943,33 @@ const ProjectEditor = () => {
               {selectedPlots.size > 0 && (
                 <div className="bulk-actions-bar">
                   <span className="bulk-count">{selectedPlots.size} selected</span>
-                  <select value={bulkStatus} onChange={e => setBulkStatus(e.target.value)} className="bulk-status-select">
-                    <option value="">Change Status…</option>
-                    <option value="Available">Available</option>
-                    <option value="Booked">Booked</option>
-                    <option value="Registered">Registered</option>
-                  </select>
-                  <button className="btn-primary btn-sm" onClick={applyBulkStatus} disabled={!bulkStatus}>Apply</button>
-                  <button className="btn-danger btn-sm" onClick={bulkDeleteSelected}>🗑️ Delete Selected</button>
+                  
+                  <div className="bulk-action-group">
+                    <select value={bulkStatus} onChange={e => setBulkStatus(e.target.value)} className="bulk-status-select">
+                      <option value="">Change Status…</option>
+                      <option value="Available">Available</option>
+                      <option value="Booked">Booked</option>
+                      <option value="Registered">Registered</option>
+                    </select>
+                    <button className="btn-primary btn-sm" onClick={applyBulkStatus} disabled={!bulkStatus}>Apply</button>
+                  </div>
+
+                  <div className="bulk-action-group">
+                    <select value={bulkFacing} onChange={e => setBulkFacing(e.target.value)} className="bulk-status-select">
+                      <option value="">Change Facing…</option>
+                      <option value="East">East</option>
+                      <option value="West">West</option>
+                      <option value="North">North</option>
+                      <option value="South">South</option>
+                      <option value="North-East">North-East</option>
+                      <option value="North-West">North-West</option>
+                      <option value="South-East">South-East</option>
+                      <option value="South-West">South-West</option>
+                    </select>
+                    <button className="btn-primary btn-sm" onClick={applyBulkFacing} disabled={!bulkFacing}>Apply</button>
+                  </div>
+
+                  <button className="btn-danger btn-sm" style={{ marginLeft: 'auto' }} onClick={bulkDeleteSelected}>🗑️ Delete</button>
                 </div>
               )}
 
