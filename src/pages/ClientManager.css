@@ -260,6 +260,27 @@
     font-size: 0.8rem;
   }
   .client-dashboard-main {
+    padding: 1rem 0.5rem;
+  }
+  .plots-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+  .plot-manager-card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
     padding: 1rem;
+  }
+  .plot-info {
+    flex: 1;
+  }
+  .plot-actions {
+    flex: 1;
+    max-width: 150px;
+  }
+  .status-select {
+    padding: 0.5rem;
+    font-size: 0.85rem;
   }
 }
