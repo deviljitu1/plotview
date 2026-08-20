@@ -12,6 +12,7 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [containerSize, setContainerSize] = useState(null);
   const [rotation, setRotation] = useState(0);
+  const [isFingerRotating, setIsFingerRotating] = useState(false);
   const [initialAngle, setInitialAngle] = useState(null);
   const containerRef = useRef(null);
   const mapImageUrl = project?.mapImageUrl || project?.backgroundUrl || '';
@@ -86,6 +87,7 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
           touchState.current.startRotation = currentRotation;
           return currentRotation;
         });
+        setIsFingerRotating(true);
       }
     };
 
@@ -104,6 +106,7 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
     const handleTouchEnd = (e) => {
       if (e.touches.length < 2) {
         touchState.current.initialAngle = null;
+        setIsFingerRotating(false);
       }
     };
 
@@ -237,7 +240,10 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
                     height={svgH}
                     viewBox={`0 0 ${imgDim.width} ${imgDim.height}`}
                     className="interactive-map"
-                    style={{ transform: `scale(${rotationScale}) rotate(${rotation}deg)`, transition: 'transform 0.3s ease' }}
+                    style={{ 
+                      transform: `scale(${rotationScale}) rotate(${rotation}deg)`, 
+                      transition: isFingerRotating ? 'none' : 'transform 0.3s ease' 
+                    }}
                   >
                     {/* Background Map Image */}
                     <image
