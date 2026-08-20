@@ -140,9 +140,16 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
   let svgW = imgDim.width;
   let svgH = imgDim.height;
   if (containerSize) {
-    const scaleX = containerSize.width / imgDim.width;
-    const scaleY = containerSize.height / imgDim.height;
+    // Calculate the bounding box of the rotated image
+    const rad = (rotation * Math.PI) / 180;
+    const boundingW = Math.abs(imgDim.width * Math.cos(rad)) + Math.abs(imgDim.height * Math.sin(rad));
+    const boundingH = Math.abs(imgDim.width * Math.sin(rad)) + Math.abs(imgDim.height * Math.cos(rad));
+    
+    // Scale needed to fit the rotated bounding box into the container
+    const scaleX = containerSize.width / boundingW;
+    const scaleY = containerSize.height / boundingH;
     const fitScale = Math.min(scaleX, scaleY);
+    
     svgW = imgDim.width * fitScale;
     svgH = imgDim.height * fitScale;
   }
