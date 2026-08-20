@@ -41,24 +41,7 @@ const PlotDetailsModal = ({ plot, project, brandColor, onClose }) => {
         </div>
 
         <div className="modal-body">
-          {plot.facing && (
-            <div className="compass-visual-container">
-              <div className="compass-grid">
-                <div className={`compass-dir n ${plot.facing === 'North' ? 'active' : ''}`}>N</div>
-                <div className={`compass-dir ne ${plot.facing === 'North-East' ? 'active' : ''}`}>NE</div>
-                <div className={`compass-dir e ${plot.facing === 'East' ? 'active' : ''}`}>E</div>
-                <div className={`compass-dir se ${plot.facing === 'South-East' ? 'active' : ''}`}>SE</div>
-                <div className={`compass-dir s ${plot.facing === 'South' ? 'active' : ''}`}>S</div>
-                <div className={`compass-dir sw ${plot.facing === 'South-West' ? 'active' : ''}`}>SW</div>
-                <div className={`compass-dir w ${plot.facing === 'West' ? 'active' : ''}`}>W</div>
-                <div className={`compass-dir nw ${plot.facing === 'North-West' ? 'active' : ''}`}>NW</div>
-                <div className="compass-center">🧭</div>
-              </div>
-              <div className="compass-text" style={{ color: brandColor || '#6366f1' }}>
-                {plot.facing} Facing Plot
-              </div>
-            </div>
-          )}
+
           <div className="info-grid">
             <div className="info-chip">
               <span className="info-label">Name</span>
