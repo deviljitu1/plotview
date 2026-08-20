@@ -446,9 +446,12 @@ const ProjectEditor = () => {
     };
   }, [activeTab, handlePointerMove, handlePointerUp]);
 
-  // Save everything
   const handleSave = async () => {
-    if (!projectName || !slug) return alert('Project name and slug are required.');
+    if (!projectName || !slug) {
+      setSaveStatus('Error: Name and Slug required');
+      setTimeout(() => setSaveStatus(''), 3000);
+      return;
+    }
     setSaving(true);
     setSaveStatus('Uploading Image...');
     try {
@@ -515,15 +518,15 @@ const ProjectEditor = () => {
       await batch.commit();
       console.log('Batch committed successfully.');
       
-      setSaveStatus('Done!');
-      alert('Project saved successfully!');
-      navigate('/admin/dashboard');
+      setSaveStatus('Saved Successfully!');
+      setTimeout(() => {
+        navigate('/admin/dashboard');
+      }, 1500);
     } catch (err) {
       console.error('Error saving project at step:', saveStatus, err);
-      alert(`Error saving project during "${saveStatus}": ${err.message}`);
-    } finally {
+      setSaveStatus('Failed to Save');
+      setTimeout(() => setSaveStatus(''), 3000);
       setSaving(false);
-      setSaveStatus('');
     }
   };
 
