@@ -26,6 +26,7 @@ const ProjectEditor = () => {
   const [contactPhone, setContactPhone] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   const [northOffset, setNorthOffset] = useState(0);
+  const [projectFacing, setProjectFacing] = useState('North');
   
   const [googleMapsUrl, setGoogleMapsUrl] = useState('');
   
@@ -102,6 +103,7 @@ const ProjectEditor = () => {
         setContactPhone(data.contactPhone || '');
         setWhatsappNumber(data.whatsappNumber || '');
         setNorthOffset(data.northOffset || 0);
+        setProjectFacing(data.projectFacing || 'North');
         
         setGoogleMapsUrl(data.googleMapsUrl || '');
         
@@ -522,6 +524,7 @@ const ProjectEditor = () => {
         contactPhone,
         whatsappNumber,
         northOffset: Number(northOffset),
+        projectFacing,
         mapImageUrl: imageUrl,
         customBrochureUrl: brochureUrl,
         imgDimensions,
@@ -657,6 +660,19 @@ const ProjectEditor = () => {
                   <label>Map North Orientation (°)</label>
                   <input type="number" value={northOffset} onChange={e => setNorthOffset(e.target.value)} placeholder="0" min="-360" max="360" />
                   <span className="form-hint">Angle of North relative to the top of image (0 = Up).</span>
+                </div>
+                <div className="form-group">
+                  <label>Project Facing Direction</label>
+                  <select value={projectFacing} onChange={e => setProjectFacing(e.target.value)}>
+                    <option value="North">North</option>
+                    <option value="South">South</option>
+                    <option value="East">East</option>
+                    <option value="West">West</option>
+                    <option value="North-East">North-East</option>
+                    <option value="North-West">North-West</option>
+                    <option value="South-East">South-East</option>
+                    <option value="South-West">South-West</option>
+                  </select>
                 </div>
                 <div className="form-group">
                   <label>Client Logo</label>
