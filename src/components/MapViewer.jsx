@@ -8,8 +8,7 @@ import eastIcon from '../assets/east-symbol-icon.svg';
 import westIcon from '../assets/west-symbol-icon.svg';
 import './MapViewer.css';
 
-const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterStatus, northOffset = 0, projectFacing = 'North' }) => {
-  const [selectedPlot, setSelectedPlot] = useState(null);
+const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterStatus, northOffset = 0, projectFacing = 'North', selectedPlot, setSelectedPlot }) => {
   const [containerSize, setContainerSize] = useState(null);
   const [rotation, setRotation] = useState(0);
   const [isFingerRotating, setIsFingerRotating] = useState(false);
@@ -33,26 +32,22 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
   const imgDim = project?.imgDimensions || { width: 1000, height: 750 };
   const hasPlots = Array.isArray(plotsData) && plotsData.length > 0;
 
-  const plotTypes = ['All', ...new Set((plotsData || []).map(p => p.type).filter(Boolean))];
+  const hasPlots = Array.isArray(plotsData) && plotsData.length > 0;
 
-  // Auto-open plot details if search query exactly matches a plot number
-  useEffect(() => {
-    if (searchQuery && hasPlots) {
-      const q = searchQuery.toLowerCase().trim();
-      const exactMatch = plotsData.find(p => (p.name || '').toLowerCase() === q);
-      if (exactMatch) {
-        setSelectedPlot(exactMatch);
-      }
-    }
-  }, [searchQuery, hasPlots, plotsData]);
+  const plotTypes = ['All', ...new Set((plotsData || []).map(p => p.type).filter(Boolean))];
 
   const isPlotVisible = (plot) => {
     if (filterType !== 'All' && plot.type !== filterType) return false;
     if (filterStatus !== 'All' && plot.status !== filterStatus) return false;
     if (searchQuery) {
-      const q = searchQuery.toLowerCase();
+      const qLower = searchQuery.toLowerCase();
       const plotName = (plot.name || '').toLowerCase();
-      if (!plotName.includes(q)) return false;
+      const pNum = plotName.replace(/\D/g, '');
+      const qNum = qLower.replace(/\D/g, '');
+      
+      if (!plotName.includes(qLower) && !(qNum && pNum && pNum.includes(qNum))) {
+        return false;
+      }
     }
     return true;
   };

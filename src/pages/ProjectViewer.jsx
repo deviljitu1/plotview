@@ -20,6 +20,7 @@ const ProjectViewer = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [selectedPlot, setSelectedPlot] = useState(null);
 
   useEffect(() => {
     loadProject();
@@ -140,6 +141,7 @@ const ProjectViewer = () => {
         setFilterStatus={setFilterStatus}
         plotTypes={plotTypes}
         plots={plots}
+        setSelectedPlot={setSelectedPlot}
       />
 
       <MapViewer
@@ -150,6 +152,8 @@ const ProjectViewer = () => {
         filterStatus={filterStatus}
         northOffset={project?.northOffset || 0}
         projectFacing={project?.projectFacing || 'North'}
+        selectedPlot={selectedPlot}
+        setSelectedPlot={setSelectedPlot}
       />
     </div>
   );

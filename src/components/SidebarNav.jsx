@@ -18,7 +18,8 @@ const SidebarNav = ({
   filterStatus,
   setFilterStatus,
   plotTypes,
-  plots
+  plots,
+  setSelectedPlot
 }) => {
   const [copied, setCopied] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null); // 'search', 'filter', or null
@@ -167,11 +168,31 @@ const SidebarNav = ({
                     placeholder="Search plot number..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && searchQuery) {
+                         const queryNum = searchQuery.replace(/\D/g, '');
+                         const match = plots?.find(p => {
+                           const plotNum = (p.name || '').replace(/\D/g, '');
+                           return plotNum && plotNum === queryNum;
+                         });
+                         if (match) {
+                           setSearchQuery(match.name);
+                           setSelectedPlot(match);
+                           setExpandedSection(null);
+                         }
+                      }
+                    }}
                   />
                   {searchQuery && expandedSection === 'search' && (
                     <div className="search-dropdown">
                       {plots
-                        ?.filter(p => (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()))
+                        ?.filter(p => {
+                           const qLower = searchQuery.toLowerCase();
+                           const nameLower = (p.name || '').toLowerCase();
+                           const pNum = nameLower.replace(/\D/g, '');
+                           const qNum = qLower.replace(/\D/g, '');
+                           return nameLower.includes(qLower) || (qNum && pNum && pNum.includes(qNum));
+                        })
                         .slice(0, 5)
                         .map(plot => (
                           <div 
@@ -179,6 +200,7 @@ const SidebarNav = ({
                             className="search-dropdown-item"
                             onClick={() => {
                               setSearchQuery(plot.name);
+                              setSelectedPlot(plot);
                               setExpandedSection(null);
                             }}
                           >
@@ -186,7 +208,13 @@ const SidebarNav = ({
                             <span style={{ fontSize: '10px', color: '#888' }}>{plot.type}</span>
                           </div>
                         ))}
-                      {plots?.filter(p => (p.name || '').toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                      {plots?.filter(p => {
+                           const qLower = searchQuery.toLowerCase();
+                           const nameLower = (p.name || '').toLowerCase();
+                           const pNum = nameLower.replace(/\D/g, '');
+                           const qNum = qLower.replace(/\D/g, '');
+                           return nameLower.includes(qLower) || (qNum && pNum && pNum.includes(qNum));
+                      }).length === 0 && (
                         <div className="search-dropdown-item empty">No plots found</div>
                       )}
                     </div>
