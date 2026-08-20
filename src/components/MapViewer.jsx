@@ -32,8 +32,6 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
   const imgDim = project?.imgDimensions || { width: 1000, height: 750 };
   const hasPlots = Array.isArray(plotsData) && plotsData.length > 0;
 
-  const hasPlots = Array.isArray(plotsData) && plotsData.length > 0;
-
   const plotTypes = ['All', ...new Set((plotsData || []).map(p => p.type).filter(Boolean))];
 
   const isPlotVisible = (plot) => {
