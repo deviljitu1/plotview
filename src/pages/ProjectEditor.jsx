@@ -9,7 +9,7 @@ import PlotDetailsModal from '../components/PlotDetailsModal';
 import MapAligner from '../components/MapAligner';
 import './ProjectEditor.css';
 
-const TABS = ['details', 'plots', 'align'];
+const TABS = ['details', 'plots'];
 
 const ProjectEditor = () => {
   const { id } = useParams(); // undefined if new
@@ -26,12 +26,7 @@ const ProjectEditor = () => {
   const [contactPhone, setContactPhone] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
   
-  // Georeferencing (Option A)
-  const [enableSatellite, setEnableSatellite] = useState(false);
-  const [geoTopLeftLat, setGeoTopLeftLat] = useState('');
-  const [geoTopLeftLng, setGeoTopLeftLng] = useState('');
-  const [geoBottomRightLat, setGeoBottomRightLat] = useState('');
-  const [geoBottomRightLng, setGeoBottomRightLng] = useState('');
+  const [googleMapsUrl, setGoogleMapsUrl] = useState('');
   
   // Map Image
   const [mapImageUrl, setMapImageUrl] = useState('');
@@ -96,11 +91,7 @@ const ProjectEditor = () => {
         setImagePreview(data.mapImageUrl || '');
         setImgDimensions(data.imgDimensions || { width: 1000, height: 750 });
         
-        setEnableSatellite(data.geoBounds?.enabled || false);
-        setGeoTopLeftLat(data.geoBounds?.topLeft?.lat || '');
-        setGeoTopLeftLng(data.geoBounds?.topLeft?.lng || '');
-        setGeoBottomRightLat(data.geoBounds?.bottomRight?.lat || '');
-        setGeoBottomRightLng(data.geoBounds?.bottomRight?.lng || '');
+        setGoogleMapsUrl(data.googleMapsUrl || '');
 
         // Load plots subcollection
         const plotsSnap = await getDocs(collection(db, 'projects', id, 'plots'));
@@ -469,11 +460,7 @@ const ProjectEditor = () => {
         mapImageUrl: imageUrl,
         imgDimensions,
         plotCount: plots.length,
-        geoBounds: {
-          enabled: enableSatellite,
-          topLeft: { lat: Number(geoTopLeftLat) || 0, lng: Number(geoTopLeftLng) || 0 },
-          bottomRight: { lat: Number(geoBottomRightLat) || 0, lng: Number(geoBottomRightLng) || 0 }
-        },
+        googleMapsUrl,
         updatedAt: new Date().toISOString(),
         ...(!isEditing && { createdAt: new Date().toISOString() })
       }, { merge: true });
@@ -615,7 +602,7 @@ const ProjectEditor = () => {
             </div>
 
             <div className="form-section">
-              <h3>Contact Information</h3>
+              <h3>Contact Information & Location</h3>
               <div className="form-grid">
                 <div className="form-group">
                   <label>Contact Phone Number</label>
@@ -624,6 +611,10 @@ const ProjectEditor = () => {
                 <div className="form-group">
                   <label>WhatsApp Number</label>
                   <input value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="e.g. +919876543210" />
+                </div>
+                <div className="form-group full-width">
+                  <label>Google Maps Location URL</label>
+                  <input value={googleMapsUrl} onChange={e => setGoogleMapsUrl(e.target.value)} placeholder="e.g. https://maps.app.goo.gl/..." />
                 </div>
               </div>
             </div>

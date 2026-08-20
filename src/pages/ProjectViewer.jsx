@@ -4,7 +4,6 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { Menu } from 'lucide-react';
 import { db } from '../lib/firebase';
 import MapViewer from '../components/MapViewer';
-import LeafletMapViewer from '../components/LeafletMapViewer';
 import SidebarNav from '../components/SidebarNav';
 import mockPlots from '../data/plots.json';
 import './ProjectViewer.css';
@@ -21,9 +20,6 @@ const ProjectViewer = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
-  
-  // View mode: 'layout' | 'satellite'
-  const [viewMode, setViewMode] = useState('layout');
 
   useEffect(() => {
     loadProject();
@@ -127,20 +123,18 @@ const ProjectViewer = () => {
 
         <div className="viewer-actions">
           <div className="view-toggle">
-            <button 
-              className={`toggle-btn ${viewMode === 'layout' ? 'active' : ''}`}
-              onClick={() => setViewMode('layout')}
-              title="Layout View"
-            >
-              🖼️ Layout
-            </button>
-            <button 
-              className={`toggle-btn ${viewMode === 'satellite' ? 'active' : ''}`}
-              onClick={() => setViewMode('satellite')}
-              title="Satellite View"
-            >
-              🛰️ Map
-            </button>
+            {project?.googleMapsUrl && (
+              <a 
+                href={project.googleMapsUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="toggle-btn map-link-btn"
+                title="View on Google Maps"
+                style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
+              >
+                📍 View on Map
+              </a>
+            )}
           </div>
           <button className="btn-menu" onClick={() => setIsMenuOpen(true)} aria-label="Open menu">
             <Menu size={24} color="#333" />
@@ -161,23 +155,13 @@ const ProjectViewer = () => {
         plotTypes={plotTypes}
       />
 
-      {viewMode === 'layout' ? (
-        <MapViewer
-          project={project}
-          plots={plots}
-          searchQuery={searchQuery}
-          filterType={filterType}
-          filterStatus={filterStatus}
-        />
-      ) : (
-        <LeafletMapViewer
-          project={project}
-          plots={plots}
-          searchQuery={searchQuery}
-          filterType={filterType}
-          filterStatus={filterStatus}
-        />
-      )}
+      <MapViewer
+        project={project}
+        plots={plots}
+        searchQuery={searchQuery}
+        filterType={filterType}
+        filterStatus={filterStatus}
+      />
     </div>
   );
 };
