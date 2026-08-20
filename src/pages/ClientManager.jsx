@@ -1,0 +1,176 @@
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
+import { db } from '../firebase';
+import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import './ClientManager.css';
+
+const ClientManager = () => {
+  const { slug } = useParams();
+  const [project, setProject] = useState(null);
+  const [projectId, setProjectId] = useState(null);
+  const [plots, setPlots] = useState([]);
+  
+  const [passwordInput, setPasswordInput] = useState('');
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [updating, setUpdating] = useState(null);
+
+  useEffect(() => {
+    fetchProject();
+  }, [slug]);
+
+  const fetchProject = async () => {
+    try {
+      const q = query(collection(db, 'projects'), where('slug', '==', slug));
+      const snapshot = await getDocs(q);
+      
+      if (snapshot.empty) {
+        setError('Project not found');
+        setLoading(false);
+        return;
+      }
+
+      const pDoc = snapshot.docs[0];
+      setProject(pDoc.data());
+      setProjectId(pDoc.id);
+      setLoading(false);
+    } catch (err) {
+      console.error('Error fetching project:', err);
+      setError('Failed to load project.');
+      setLoading(false);
+    }
+  };
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    if (!project) return;
+    
+    if (!project.clientPassword) {
+      setError('No client password is set for this project. Please contact the administrator.');
+      return;
+    }
+
+    if (passwordInput === project.clientPassword) {
+      setIsAuthenticated(true);
+      setError('');
+      await loadPlots(projectId);
+    } else {
+      setError('Incorrect password');
+    }
+  };
+
+  const loadPlots = async (id) => {
+    try {
+      const plotsSnap = await getDocs(collection(db, 'projects', id, 'plots'));
+      const plotsList = plotsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      
+      // Sort alphabetically/numerically
+      plotsList.sort((a, b) => {
+        const numA = parseInt(a.name.replace(/\D/g, '')) || 0;
+        const numB = parseInt(b.name.replace(/\D/g, '')) || 0;
+        return numA - numB || a.name.localeCompare(b.name);
+      });
+
+      setPlots(plotsList);
+    } catch (err) {
+      console.error('Error loading plots:', err);
+      setError('Failed to load plots');
+    }
+  };
+
+  const handleStatusChange = async (plotId, newStatus) => {
+    setUpdating(plotId);
+    try {
+      const plotRef = doc(db, 'projects', projectId, 'plots', plotId);
+      await updateDoc(plotRef, { status: newStatus });
+      setPlots(prev => prev.map(p => p.id === plotId ? { ...p, status: newStatus } : p));
+    } catch (err) {
+      console.error('Error updating status:', err);
+      alert('Failed to update status. Please try again.');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  if (loading) {
+    return <div className="client-manager-loading">Loading...</div>;
+  }
+
+  if (error && !project) {
+    return <div className="client-manager-error">{error}</div>;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="client-login-container">
+        <div className="client-login-card">
+          {project?.clientLogo && (
+            <img src={project.clientLogo} alt="Logo" className="client-login-logo" />
+          )}
+          <h2>{project?.name}</h2>
+          <p>Client Management Portal</p>
+          
+          <form onSubmit={handleLogin} className="client-login-form">
+            <input 
+              type="password" 
+              placeholder="Enter Access Password" 
+              value={passwordInput}
+              onChange={(e) => setPasswordInput(e.target.value)}
+              required
+            />
+            {error && <div className="error-text">{error}</div>}
+            <button type="submit" style={{ background: project?.brandColor || '#6366f1' }}>
+              Access Dashboard
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="client-dashboard">
+      <header className="client-dashboard-header" style={{ borderBottomColor: project?.brandColor || '#6366f1' }}>
+        <div className="header-content">
+          {project?.clientLogo && <img src={project.clientLogo} alt="Logo" className="header-logo" />}
+          <div>
+            <h1>{project?.name}</h1>
+            <p>Inventory Status Manager</p>
+          </div>
+        </div>
+        <button className="btn-logout" onClick={() => setIsAuthenticated(false)}>
+          Lock / Logout
+        </button>
+      </header>
+
+      <main className="client-dashboard-main">
+        <div className="plots-grid">
+          {plots.map(plot => (
+            <div key={plot.id} className="plot-manager-card">
+              <div className="plot-info">
+                <h3>{plot.name}</h3>
+                <span className="plot-type">{plot.type}</span>
+              </div>
+              <div className="plot-actions">
+                <select 
+                  value={plot.status}
+                  onChange={(e) => handleStatusChange(plot.id, e.target.value)}
+                  disabled={updating === plot.id}
+                  className={`status-select ${plot.status.toLowerCase()}`}
+                >
+                  <option value="Available">Available</option>
+                  <option value="Booked">Booked</option>
+                  <option value="Registered">Registered</option>
+                </select>
+                {updating === plot.id && <span className="updating-spinner" />}
+              </div>
+            </div>
+          ))}
+        </div>
+      </main>
+    </div>
+  );
+};
+
+export default ClientManager;

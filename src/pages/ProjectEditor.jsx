@@ -29,6 +29,7 @@ const ProjectEditor = () => {
   const [description, setDescription] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [clientPassword, setClientPassword] = useState('');
   const [northOffset, setNorthOffset] = useState(0);
   const [projectFacing, setProjectFacing] = useState('North');
   
@@ -106,6 +107,7 @@ const ProjectEditor = () => {
         setDescription(data.description || '');
         setContactPhone(data.contactPhone || '');
         setWhatsappNumber(data.whatsappNumber || '');
+        setClientPassword(data.clientPassword || '');
         setNorthOffset(data.northOffset || 0);
         setProjectFacing(data.projectFacing || 'North');
         
@@ -527,6 +529,7 @@ const ProjectEditor = () => {
         description,
         contactPhone,
         whatsappNumber,
+        clientPassword,
         northOffset: Number(northOffset),
         projectFacing,
         mapImageUrl: imageUrl,
@@ -727,6 +730,37 @@ const ProjectEditor = () => {
                     </p>
                   )}
                   <p className="form-hint">Upload a custom PDF brochure. If not provided, a beautiful auto-generated brochure will be created for clients to download.</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="form-section">
+              <h3>Client Management Portal</h3>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Client Status Manager Password</label>
+                  <input type="text" value={clientPassword} onChange={e => setClientPassword(e.target.value)} placeholder="e.g. sell2026" />
+                  <span className="form-hint">Set a simple password for the client to update plot statuses.</span>
+                </div>
+                <div className="form-group" style={{ display: 'flex', alignItems: 'flex-end' }}>
+                  {slug && clientPassword ? (
+                    <button 
+                      type="button" 
+                      className="btn-secondary" 
+                      style={{ width: '100%', marginBottom: '0.2rem' }}
+                      onClick={() => {
+                        const url = `${window.location.origin}/manage/${slug}`;
+                        navigator.clipboard.writeText(`Manage your plots here:\nURL: ${url}\nPassword: ${clientPassword}`);
+                        alert('Client management link and password copied to clipboard!');
+                      }}
+                    >
+                      📋 Copy Client Login Link
+                    </button>
+                  ) : (
+                    <span className="form-hint" style={{ marginTop: 'auto', marginBottom: '1rem' }}>
+                      Save project with a slug and password to generate link.
+                    </span>
+                  )}
                 </div>
               </div>
             </div>

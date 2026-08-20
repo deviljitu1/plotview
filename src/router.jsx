@@ -6,6 +6,7 @@ import AdminLogin from './pages/AdminLogin';
 import AdminDashboard from './pages/AdminDashboard';
 import ProjectEditor from './pages/ProjectEditor';
 import ProtectedRoute from './components/ProtectedRoute';
+import ClientManager from './pages/ClientManager';
 
 const router = createBrowserRouter([
   {
@@ -15,6 +16,10 @@ const router = createBrowserRouter([
   {
     path: '/project/:slug',
     element: <ProjectViewer />,
+  },
+  {
+    path: '/manage/:slug',
+    element: <ClientManager />,
   },
   {
     path: '/admin/login',
