@@ -192,6 +192,12 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
             {({ zoomIn, zoomOut, resetTransform }) => (
               <>
                 <div className="controls">
+                  <div className="compass-indicator" style={{ transform: `rotate(${rotation}deg)` }} title="North Direction">
+                    <span className="compass-n">N</span>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polygon points="12 2 19 21 12 17 5 21 12 2" />
+                    </svg>
+                  </div>
                   <button onClick={() => setRotation(r => r - 90)} aria-label="Rotate left" title="Rotate left"><RotateCcw size={18} /></button>
                   <button onClick={() => setRotation(r => r + 90)} aria-label="Rotate right" title="Rotate right"><RotateCw size={18} /></button>
                   <button onClick={() => zoomIn()} aria-label="Zoom in" title="Zoom in">+</button>

@@ -196,3 +196,4 @@
     font-size: 0.68rem;
   }
 }
+.compass-indicator { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 36px; height: 48px; color: #333; margin-bottom: 8px; transition: transform 0.3s ease; } .compass-n { font-size: 10px; font-weight: 700; line-height: 1; margin-bottom: -2px; } .compass-indicator svg { width: 20px; height: 20px; fill: rgba(99, 102, 241, 0.2); stroke: #6366f1; }
