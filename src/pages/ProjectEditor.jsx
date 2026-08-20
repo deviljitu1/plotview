@@ -7,6 +7,10 @@ import { v4 as uuidv4 } from 'uuid';
 import * as XLSX from 'xlsx';
 import PlotDetailsModal from '../components/PlotDetailsModal';
 import MapAligner from '../components/MapAligner';
+import northIcon from '../assets/north-symbol-icon.svg';
+import southIcon from '../assets/south-symbol-icon.svg';
+import eastIcon from '../assets/east-symbol-icon.svg';
+import westIcon from '../assets/west-symbol-icon.svg';
 import './ProjectEditor.css';
 
 const TABS = ['details', 'plots', 'align'];
@@ -1069,7 +1073,37 @@ const ProjectEditor = () => {
             ) : (
               <>
                 <div className="align-instructions">
-                  <p>🎯 <strong>Drag the red corner dots</strong> to align each plot boundary over the map image. Click a plot label to highlight it.</p>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <p>🎯 <strong>Drag the red corner dots</strong> to align each plot boundary over the map image. Click a plot label to highlight it.</p>
+                    <div className="visual-compass-calibrator" style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <label style={{ fontSize: '11px', display: 'block', marginBottom: '4px' }}>North Offset (°)</label>
+                        <input 
+                          type="range" 
+                          min="-180" max="180" 
+                          value={northOffset} 
+                          onChange={(e) => setNorthOffset(Number(e.target.value))} 
+                        />
+                        <div style={{ fontSize: '12px', fontWeight: 'bold' }}>{northOffset}°</div>
+                      </div>
+                      <div style={{ 
+                        width: '40px', height: '40px', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', 
+                        transform: `rotate(${northOffset}deg)`,
+                        transition: 'transform 0.1s'
+                      }}>
+                        <img 
+                          src={
+                            projectFacing === 'South' ? southIcon :
+                            projectFacing === 'East' ? eastIcon :
+                            projectFacing === 'West' ? westIcon :
+                            northIcon
+                          } 
+                          alt="Compass" style={{ width: '100%', height: '100%', objectFit: 'contain' }} 
+                        />
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <div className="align-canvas-wrapper">
                   <svg
