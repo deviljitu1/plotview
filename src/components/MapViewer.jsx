@@ -61,29 +61,60 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
     setContainerSize({ width: w, height: h });
   }, []);
 
-  const handleTouchStart = (e) => {
-    if (e.touches.length === 2) {
-      const dx = e.touches[1].clientX - e.touches[0].clientX;
-      const dy = e.touches[1].clientY - e.touches[0].clientY;
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      setInitialAngle(angle - rotation);
-    }
-  };
+  const touchState = useRef({ initialAngle: null, startRotation: 0 });
 
-  const handleTouchMove = (e) => {
-    if (e.touches.length === 2 && initialAngle !== null) {
-      const dx = e.touches[1].clientX - e.touches[0].clientX;
-      const dy = e.touches[1].clientY - e.touches[0].clientY;
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
-      setRotation(angle - initialAngle);
-    }
-  };
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
 
-  const handleTouchEnd = (e) => {
-    if (e.touches.length < 2) {
-      setInitialAngle(null);
-    }
-  };
+    const handleTouchStart = (e) => {
+      if (e.touches.length === 2) {
+        const dx = e.touches[1].clientX - e.touches[0].clientX;
+        const dy = e.touches[1].clientY - e.touches[0].clientY;
+        const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+        // We capture the current rotation from the state by using a state functional update trick,
+        // but it's simpler to just store the latest rotation in a ref if needed. 
+        // We can just rely on the React state value if we add `rotation` to deps,
+        // but to avoid re-binding, let's keep rotation in a ref too, or use functional update.
+        // Let's use functional update to get current rotation:
+        setRotation(currentRotation => {
+          touchState.current.initialAngle = angle;
+          touchState.current.startRotation = currentRotation;
+          return currentRotation;
+        });
+      }
+    };
+
+    const handleTouchMove = (e) => {
+      if (e.touches.length === 2 && touchState.current.initialAngle !== null) {
+        const dx = e.touches[1].clientX - e.touches[0].clientX;
+        const dy = e.touches[1].clientY - e.touches[0].clientY;
+        const currentAngle = Math.atan2(dy, dx) * (180 / Math.PI);
+        
+        let delta = currentAngle - touchState.current.initialAngle;
+        
+        setRotation(touchState.current.startRotation + delta);
+      }
+    };
+
+    const handleTouchEnd = (e) => {
+      if (e.touches.length < 2) {
+        touchState.current.initialAngle = null;
+      }
+    };
+
+    el.addEventListener('touchstart', handleTouchStart, { capture: true });
+    el.addEventListener('touchmove', handleTouchMove, { capture: true, passive: true });
+    el.addEventListener('touchend', handleTouchEnd, { capture: true });
+    el.addEventListener('touchcancel', handleTouchEnd, { capture: true });
+
+    return () => {
+      el.removeEventListener('touchstart', handleTouchStart, { capture: true });
+      el.removeEventListener('touchmove', handleTouchMove, { capture: true, passive: true });
+      el.removeEventListener('touchend', handleTouchEnd, { capture: true });
+      el.removeEventListener('touchcancel', handleTouchEnd, { capture: true });
+    };
+  }, []);
 
   useEffect(() => {
     // Measure after initial layout
@@ -117,10 +148,6 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
       <div 
         className="map-viewer" 
         ref={containerRef}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={handleTouchEnd}
       >
         {!mapImageUrl && (
           <div className="map-empty-state">

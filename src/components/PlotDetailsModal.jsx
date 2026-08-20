@@ -41,6 +41,11 @@ const PlotDetailsModal = ({ plot, project, brandColor, onClose }) => {
         </div>
 
         <div className="modal-body">
+          {plot.facing && (
+            <div className="facing-banner" style={{ background: `${brandColor || '#6366f1'}15`, color: brandColor || '#6366f1' }}>
+              <span className="facing-icon">🧭</span> {plot.facing} Facing Plot
+            </div>
+          )}
           <div className="info-grid">
             <div className="info-chip">
               <span className="info-label">Name</span>
