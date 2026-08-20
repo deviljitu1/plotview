@@ -207,4 +207,51 @@
 .btn-clear-filter:hover {
   background: #fecaca;
 }
+
+.search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  margin-top: 4px;
+  background: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  z-index: 100;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.search-dropdown-item {
+  padding: 0.6rem 0.8rem;
+  font-size: 0.85rem;
+  font-family: 'Inter', sans-serif;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: background 0.2s;
+  border-bottom: 1px solid #eee;
+}
+
+.search-dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.search-dropdown-item:hover {
+  background: #f8fafc;
+}
+
+.search-dropdown-item.empty {
+  color: #888;
+  justify-content: center;
+  cursor: default;
+}
+.search-dropdown-item.empty:hover {
+  background: #fff;
+}
+
 @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }

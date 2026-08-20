@@ -142,6 +142,29 @@ const SidebarNav = ({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
+                  {searchQuery && expandedSection === 'search' && (
+                    <div className="search-dropdown">
+                      {plots
+                        ?.filter(p => (p.name || '').toLowerCase().includes(searchQuery.toLowerCase()))
+                        .slice(0, 5)
+                        .map(plot => (
+                          <div 
+                            key={plot.id} 
+                            className="search-dropdown-item"
+                            onClick={() => {
+                              setSearchQuery(plot.name);
+                              setExpandedSection(null);
+                            }}
+                          >
+                            <span>{plot.name}</span>
+                            <span style={{ fontSize: '10px', color: '#888' }}>{plot.type}</span>
+                          </div>
+                        ))}
+                      {plots?.filter(p => (p.name || '').toLowerCase().includes(searchQuery.toLowerCase())).length === 0 && (
+                        <div className="search-dropdown-item empty">No plots found</div>
+                      )}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
