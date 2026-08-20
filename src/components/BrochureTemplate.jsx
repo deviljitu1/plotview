@@ -134,7 +134,7 @@ const BrochureTemplate = ({ project, plots }) => {
         marginTop: 'auto'
       }}>
         <div>
-          <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: brandColor }}>Contact Us</h4>
+          <h4 style={{ margin: '0 0 10px 0', fontSize: '18px', color: '#ffffff' }}>Contact Us</h4>
           {contactPhone && <div style={{ marginBottom: '5px' }}>📞 {contactPhone}</div>}
           {whatsappNumber && <div>💬 {whatsappNumber}</div>}
         </div>
