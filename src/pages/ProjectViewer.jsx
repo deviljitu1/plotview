@@ -122,20 +122,6 @@ const ProjectViewer = () => {
         </div>
 
         <div className="viewer-actions">
-          <div className="view-toggle">
-            {project?.googleMapsUrl && (
-              <a 
-                href={project.googleMapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="toggle-btn map-link-btn"
-                title="View on Google Maps"
-                style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px' }}
-              >
-                📍 View on Map
-              </a>
-            )}
-          </div>
           <button className="btn-menu" onClick={() => setIsMenuOpen(true)} aria-label="Open menu">
             <Menu size={24} color="#333" />
           </button>
