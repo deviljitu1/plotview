@@ -176,6 +176,7 @@
   cursor: pointer;
   transition: transform 0.15s ease, opacity 0.15s ease;
   font-family: 'Inter', sans-serif;
+  text-decoration: none;
 }
 
 .btn-action:active {
