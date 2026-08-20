@@ -10,6 +10,7 @@ const ClientManager = () => {
   const [projectId, setProjectId] = useState(null);
   const [plots, setPlots] = useState([]);
   
+  const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -46,17 +47,17 @@ const ClientManager = () => {
     e.preventDefault();
     if (!project) return;
     
-    if (!project.clientPassword) {
-      setError('No client password is set for this project. Please contact the administrator.');
+    if (!project.clientUsername || !project.clientPassword) {
+      setError('Client login is not fully configured for this project. Please contact the administrator.');
       return;
     }
 
-    if (passwordInput === project.clientPassword) {
+    if (usernameInput === project.clientUsername && passwordInput === project.clientPassword) {
       setIsAuthenticated(true);
       setError('');
       await loadPlots(projectId);
     } else {
-      setError('Incorrect password');
+      setError('Incorrect login ID or password');
     }
   };
 
@@ -112,6 +113,13 @@ const ClientManager = () => {
           <p>Client Management Portal</p>
           
           <form onSubmit={handleLogin} className="client-login-form">
+            <input 
+              type="text" 
+              placeholder="Enter Login ID" 
+              value={usernameInput}
+              onChange={(e) => setUsernameInput(e.target.value)}
+              required
+            />
             <input 
               type="password" 
               placeholder="Enter Access Password" 
