@@ -23,6 +23,8 @@ const ProjectEditor = () => {
   const [clientLogo, setClientLogo] = useState('');
   const [brandColor, setBrandColor] = useState('#6366f1');
   const [description, setDescription] = useState('');
+  const [contactPhone, setContactPhone] = useState('');
+  const [whatsappNumber, setWhatsappNumber] = useState('');
   
   // Georeferencing (Option A)
   const [enableSatellite, setEnableSatellite] = useState(false);
@@ -88,6 +90,8 @@ const ProjectEditor = () => {
         setClientLogo(data.clientLogo || '');
         setBrandColor(data.brandColor || '#6366f1');
         setDescription(data.description || '');
+        setContactPhone(data.contactPhone || '');
+        setWhatsappNumber(data.whatsappNumber || '');
         setMapImageUrl(data.mapImageUrl || '');
         setImagePreview(data.mapImageUrl || '');
         setImgDimensions(data.imgDimensions || { width: 1000, height: 750 });
@@ -460,6 +464,8 @@ const ProjectEditor = () => {
         clientLogo,
         brandColor,
         description,
+        contactPhone,
+        whatsappNumber,
         mapImageUrl: imageUrl,
         imgDimensions,
         plotCount: plots.length,
@@ -604,6 +610,20 @@ const ProjectEditor = () => {
                     )}
                     <input id="logoInput" type="file" accept="image/*" onChange={handleLogoDrop} hidden />
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="form-section">
+              <h3>Contact Information</h3>
+              <div className="form-grid">
+                <div className="form-group">
+                  <label>Contact Phone Number</label>
+                  <input value={contactPhone} onChange={e => setContactPhone(e.target.value)} placeholder="e.g. +919876543210" />
+                </div>
+                <div className="form-group">
+                  <label>WhatsApp Number</label>
+                  <input value={whatsappNumber} onChange={e => setWhatsappNumber(e.target.value)} placeholder="e.g. +919876543210" />
                 </div>
               </div>
             </div>

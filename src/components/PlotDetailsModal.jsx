@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { X, Phone, MessageCircle } from 'lucide-react';
 import './PlotDetailsModal.css';
 
-const PlotDetailsModal = ({ plot, brandColor, onClose }) => {
+const PlotDetailsModal = ({ plot, project, brandColor, onClose }) => {
   if (!plot) return null;
 
   // Prevent body scroll while modal is open
@@ -61,12 +61,22 @@ const PlotDetailsModal = ({ plot, brandColor, onClose }) => {
           </div>
 
           <div className="action-row">
-            <button className="btn-action btn-call">
+            <a 
+              href={project?.contactPhone ? `tel:${project.contactPhone.replace(/\s+/g, '')}` : '#'} 
+              className={`btn-action btn-call ${!project?.contactPhone ? 'disabled' : ''}`}
+              onClick={(e) => !project?.contactPhone && e.preventDefault()}
+            >
               <Phone size={16} /> Call
-            </button>
-            <button className="btn-action btn-whatsapp">
+            </a>
+            <a 
+              href={project?.whatsappNumber ? `https://wa.me/${project.whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello, I am interested in plot ${plot.name} at ${project.name}`)}` : '#'} 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className={`btn-action btn-whatsapp ${!project?.whatsappNumber ? 'disabled' : ''}`}
+              onClick={(e) => !project?.whatsappNumber && e.preventDefault()}
+            >
               <MessageCircle size={16} /> WhatsApp
-            </button>
+            </a>
           </div>
         </div>
       </div>

@@ -197,6 +197,7 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
       {selectedPlot && (
         <PlotDetailsModal
           plot={selectedPlot}
+          project={project}
           brandColor={project?.brandColor}
           onClose={() => setSelectedPlot(null)}
         />

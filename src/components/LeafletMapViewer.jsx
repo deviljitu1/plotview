@@ -109,6 +109,7 @@ const LeafletMapViewer = ({ project, plots: plotsData, searchQuery, filterType, 
       {selectedPlot && (
         <PlotDetailsModal
           plot={selectedPlot}
+          project={project}
           brandColor={project?.brandColor}
           onClose={() => setSelectedPlot(null)}
         />
