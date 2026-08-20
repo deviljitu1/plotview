@@ -2,6 +2,10 @@ import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { Search, Filter, X, RotateCcw, RotateCw } from 'lucide-react';
 import PlotDetailsModal from './PlotDetailsModal';
+import northIcon from '../assets/north-symbol-icon.svg';
+import southIcon from '../assets/south-symbol-icon.svg';
+import eastIcon from '../assets/east-symbol-icon.svg';
+import westIcon from '../assets/west-symbol-icon.svg';
 import './MapViewer.css';
 
 const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterStatus, northOffset = 0 }) => {
@@ -236,21 +240,21 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
                         cy = pts.reduce((sum, p) => sum + p[1], 0) / pts.length;
                       }
 
-                      const getFacingArrow = (facing) => {
+                      const getFacingIcon = (facing) => {
                         switch(facing?.toLowerCase()) {
-                          case 'north': return '↑';
-                          case 'south': return '↓';
-                          case 'east': return '→';
-                          case 'west': return '←';
-                          case 'north-east': return '↗';
-                          case 'north-west': return '↖';
-                          case 'south-east': return '↘';
-                          case 'south-west': return '↙';
-                          default: return '';
+                          case 'north': return northIcon;
+                          case 'south': return southIcon;
+                          case 'east': return eastIcon;
+                          case 'west': return westIcon;
+                          case 'north-east': return northIcon; // Fallbacks
+                          case 'north-west': return northIcon;
+                          case 'south-east': return southIcon;
+                          case 'south-west': return southIcon;
+                          default: return null;
                         }
                       };
 
-                      const arrow = getFacingArrow(plot.facing);
+                      const facingIconSrc = getFacingIcon(plot.facing);
 
                       return (
                         <g 
@@ -273,19 +277,15 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
                                 fill="transparent"
                                 className="plot-polygon-hover"
                               />
-                              {arrow && (
-                                <text 
-                                  x={cx} 
-                                  y={cy} 
-                                  fill="#fff" 
-                                  fontSize="16" 
-                                  fontWeight="bold"
-                                  textAnchor="middle" 
-                                  alignmentBaseline="middle"
-                                  style={{ pointerEvents: 'none', filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.8))' }}
-                                >
-                                  {arrow}
-                                </text>
+                              {facingIconSrc && (
+                                <image
+                                  href={facingIconSrc}
+                                  x={cx - 12}
+                                  y={cy - 12}
+                                  width="24"
+                                  height="24"
+                                  style={{ pointerEvents: 'none' }}
+                                />
                               )}
                             </>
                           )}
