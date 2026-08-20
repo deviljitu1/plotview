@@ -23,6 +23,13 @@ const ProjectEditor = () => {
   const [brandColor, setBrandColor] = useState('#6366f1');
   const [description, setDescription] = useState('');
   
+  // Georeferencing (Option A)
+  const [enableSatellite, setEnableSatellite] = useState(false);
+  const [geoTopLeftLat, setGeoTopLeftLat] = useState('');
+  const [geoTopLeftLng, setGeoTopLeftLng] = useState('');
+  const [geoBottomRightLat, setGeoBottomRightLat] = useState('');
+  const [geoBottomRightLng, setGeoBottomRightLng] = useState('');
+  
   // Map Image
   const [mapImageUrl, setMapImageUrl] = useState('');
   const [mapImageFile, setMapImageFile] = useState(null);
@@ -83,6 +90,12 @@ const ProjectEditor = () => {
         setMapImageUrl(data.mapImageUrl || '');
         setImagePreview(data.mapImageUrl || '');
         setImgDimensions(data.imgDimensions || { width: 1000, height: 750 });
+        
+        setEnableSatellite(data.geoBounds?.enabled || false);
+        setGeoTopLeftLat(data.geoBounds?.topLeft?.lat || '');
+        setGeoTopLeftLng(data.geoBounds?.topLeft?.lng || '');
+        setGeoBottomRightLat(data.geoBounds?.bottomRight?.lat || '');
+        setGeoBottomRightLng(data.geoBounds?.bottomRight?.lng || '');
 
         // Load plots subcollection
         const plotsSnap = await getDocs(collection(db, 'projects', id, 'plots'));
@@ -108,8 +121,8 @@ const ProjectEditor = () => {
     const total = plots.length;
     const available = plots.filter(p => p.status === 'Available').length;
     const booked = plots.filter(p => p.status === 'Booked').length;
-    const sold = plots.filter(p => p.status === 'Sold').length;
-    return { total, available, booked, sold };
+    const registered = plots.filter(p => p.status === 'Registered').length;
+    return { total, available, booked, registered };
   }, [plots]);
 
   // ==================== FILTERED PLOTS ====================
@@ -153,7 +166,7 @@ const ProjectEditor = () => {
           }
 
           // Validate status
-          const validStatuses = ['Available', 'Booked', 'Sold'];
+          const validStatuses = ['Available', 'Booked', 'Registered'];
           if (normalized.status && !validStatuses.includes(normalized.status)) {
             // Try case-insensitive match
             const match = validStatuses.find(s => s.toLowerCase() === normalized.status.toLowerCase());
@@ -449,6 +462,11 @@ const ProjectEditor = () => {
         mapImageUrl: imageUrl,
         imgDimensions,
         plotCount: plots.length,
+        geoBounds: {
+          enabled: enableSatellite,
+          topLeft: { lat: Number(geoTopLeftLat) || 0, lng: Number(geoTopLeftLng) || 0 },
+          bottomRight: { lat: Number(geoBottomRightLat) || 0, lng: Number(geoBottomRightLng) || 0 }
+        },
         updatedAt: new Date().toISOString(),
         ...(!isEditing && { createdAt: new Date().toISOString() })
       }, { merge: true });
@@ -611,6 +629,46 @@ const ProjectEditor = () => {
                 <input id="mapInput" type="file" accept="image/*" onChange={handleImageDrop} hidden />
               </div>
             </div>
+
+            <div className="form-section">
+              <h3>Georeferencing (Satellite Map Integration)</h3>
+              <div className="form-grid">
+                <div className="form-group full-width">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={enableSatellite} 
+                      onChange={e => setEnableSatellite(e.target.checked)} 
+                    />
+                    Enable Satellite Map View
+                  </label>
+                  <p className="form-hint" style={{ marginTop: '0.25rem' }}>
+                    Provide the Top-Left and Bottom-Right GPS coordinates of your layout image to enable the satellite map overlay.
+                  </p>
+                </div>
+                
+                {enableSatellite && (
+                  <>
+                    <div className="form-group">
+                      <label>Top-Left Latitude</label>
+                      <input type="number" step="any" value={geoTopLeftLat} onChange={e => setGeoTopLeftLat(e.target.value)} placeholder="e.g. 21.2460" />
+                    </div>
+                    <div className="form-group">
+                      <label>Top-Left Longitude</label>
+                      <input type="number" step="any" value={geoTopLeftLng} onChange={e => setGeoTopLeftLng(e.target.value)} placeholder="e.g. 81.6275" />
+                    </div>
+                    <div className="form-group">
+                      <label>Bottom-Right Latitude</label>
+                      <input type="number" step="any" value={geoBottomRightLat} onChange={e => setGeoBottomRightLat(e.target.value)} placeholder="e.g. 21.2435" />
+                    </div>
+                    <div className="form-group">
+                      <label>Bottom-Right Longitude</label>
+                      <input type="number" step="any" value={geoBottomRightLng} onChange={e => setGeoBottomRightLng(e.target.value)} placeholder="e.g. 81.6320" />
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
           </div>
         )}
 
@@ -632,17 +690,17 @@ const ProjectEditor = () => {
                 <span className="stat-number">{stats.booked}</span>
                 <span className="stat-label">Booked</span>
               </div>
-              <div className="stat-card stat-sold">
-                <span className="stat-number">{stats.sold}</span>
-                <span className="stat-label">Sold</span>
+              <div className="stat-card stat-registered">
+                <span className="stat-number">{stats.registered}</span>
+                <span className="stat-label">Registered</span>
               </div>
               {stats.total > 0 && (
                 <div className="stat-card stat-progress">
                   <div className="progress-bar">
-                    <div className="progress-sold" style={{ width: `${(stats.sold / stats.total) * 100}%` }}></div>
+                    <div className="progress-registered" style={{ width: `${(stats.registered / stats.total) * 100}%` }}></div>
                     <div className="progress-booked" style={{ width: `${(stats.booked / stats.total) * 100}%` }}></div>
                   </div>
-                  <span className="stat-label">{Math.round(((stats.sold + stats.booked) / stats.total) * 100)}% Sold/Booked</span>
+                  <span className="stat-label">{Math.round(((stats.registered + stats.booked) / stats.total) * 100)}% Registered/Booked</span>
                 </div>
               )}
             </div>
@@ -730,7 +788,7 @@ const ProjectEditor = () => {
                   <select value={plotForm.status} onChange={e => setPlotForm(p => ({...p, status: e.target.value}))}>
                     <option value="Available">Available</option>
                     <option value="Booked">Booked</option>
-                    <option value="Sold">Sold</option>
+                    <option value="Registered">Registered</option>
                   </select>
                 </div>
                 <div className="form-group">
@@ -776,7 +834,7 @@ const ProjectEditor = () => {
                   <option value="All">All Status</option>
                   <option value="Available">Available</option>
                   <option value="Booked">Booked</option>
-                  <option value="Sold">Sold</option>
+                  <option value="Registered">Registered</option>
                 </select>
                 <select className="filter-select" value={filterType} onChange={e => setFilterType(e.target.value)}>
                   <option value="All">All Types</option>
@@ -795,7 +853,7 @@ const ProjectEditor = () => {
                     <option value="">Change Status…</option>
                     <option value="Available">Available</option>
                     <option value="Booked">Booked</option>
-                    <option value="Sold">Sold</option>
+                    <option value="Registered">Registered</option>
                   </select>
                   <button className="btn-primary btn-sm" onClick={applyBulkStatus} disabled={!bulkStatus}>Apply</button>
                   <button className="btn-danger btn-sm" onClick={bulkDeleteSelected}>🗑️ Delete Selected</button>

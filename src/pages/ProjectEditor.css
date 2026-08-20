@@ -326,7 +326,7 @@
 
 .stat-available .stat-number { color: #34d399; }
 .stat-booked .stat-number { color: #fbbf24; }
-.stat-sold .stat-number { color: #f87171; }
+.stat-registered .stat-number { color: #f87171; }
 
 .stat-progress {
   grid-column: span 2;
@@ -344,7 +344,7 @@
   display: flex;
 }
 
-.progress-sold {
+.progress-registered {
   height: 100%;
   background: #ef4444;
   transition: width 0.3s ease;
@@ -545,7 +545,7 @@
 
 .status-badge.available { background: rgba(16,185,129,0.15); color: #6ee7b7; }
 .status-badge.booked { background: rgba(245,158,11,0.15); color: #fcd34d; }
-.status-badge.sold { background: rgba(239,68,68,0.15); color: #fca5a5; }
+.status-badge.registered { background: rgba(239,68,68,0.15); color: #fca5a5; }
 
 .type-badge {
   padding: 0.2rem 0.6rem;

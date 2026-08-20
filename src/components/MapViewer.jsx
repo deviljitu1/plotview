@@ -1,12 +1,13 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { Search, Filter, X } from 'lucide-react';
+import { Search, Filter, X, RotateCcw, RotateCw } from 'lucide-react';
 import PlotDetailsModal from './PlotDetailsModal';
 import './MapViewer.css';
 
 const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterStatus }) => {
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [containerSize, setContainerSize] = useState(null);
+  const [rotation, setRotation] = useState(0);
   const containerRef = useRef(null);
   const mapImageUrl = project?.mapImageUrl || project?.backgroundUrl || '';
 
@@ -18,7 +19,7 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
     switch (status) {
       case 'Available': return 'rgba(16, 185, 129, 0.35)';
       case 'Booked': return 'rgba(245, 158, 11, 0.35)';
-      case 'Sold': return 'rgba(239, 68, 68, 0.35)';
+      case 'Registered': return 'rgba(239, 68, 68, 0.35)';
       default: return 'rgba(255, 255, 255, 0.3)';
     }
   };
@@ -133,9 +134,11 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
             {({ zoomIn, zoomOut, resetTransform }) => (
               <>
                 <div className="controls">
-                  <button onClick={() => zoomIn()} aria-label="Zoom in">+</button>
-                  <button onClick={() => zoomOut()} aria-label="Zoom out">−</button>
-                  <button onClick={() => resetTransform()} aria-label="Reset zoom">⟲</button>
+                  <button onClick={() => setRotation(r => r - 90)} aria-label="Rotate left" title="Rotate left"><RotateCcw size={18} /></button>
+                  <button onClick={() => setRotation(r => r + 90)} aria-label="Rotate right" title="Rotate right"><RotateCw size={18} /></button>
+                  <button onClick={() => zoomIn()} aria-label="Zoom in" title="Zoom in">+</button>
+                  <button onClick={() => zoomOut()} aria-label="Zoom out" title="Zoom out">−</button>
+                  <button onClick={() => { resetTransform(); setRotation(0); }} aria-label="Reset zoom" title="Reset view">⟲</button>
                 </div>
                 <TransformComponent
                   wrapperClass="transform-wrapper"
@@ -146,6 +149,7 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
                     height={svgH}
                     viewBox={`0 0 ${imgDim.width} ${imgDim.height}`}
                     className="interactive-map"
+                    style={{ transform: `rotate(${rotation}deg)`, transition: 'transform 0.3s ease' }}
                   >
                     {/* Background Map Image */}
                     <image

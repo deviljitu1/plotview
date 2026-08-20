@@ -39,7 +39,9 @@ const LandingPage = () => {
               <div className="mock-dots">
                 <span></span><span></span><span></span>
               </div>
-              <div className="mock-url">plotview.app/project/sunrise-villas</div>
+              <Link to="/project/example" className="mock-url" style={{textDecoration: 'none', color: 'inherit'}}>
+                plotview.app/project/example
+              </Link>
             </div>
             <div className="mock-body">
               <div className="mock-map">

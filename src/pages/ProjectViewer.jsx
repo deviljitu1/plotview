@@ -4,7 +4,9 @@ import { collection, getDocs, query, where } from 'firebase/firestore';
 import { Menu } from 'lucide-react';
 import { db } from '../lib/firebase';
 import MapViewer from '../components/MapViewer';
+import LeafletMapViewer from '../components/LeafletMapViewer';
 import SidebarNav from '../components/SidebarNav';
+import mockPlots from '../data/plots.json';
 import './ProjectViewer.css';
 
 const ProjectViewer = () => {
@@ -19,6 +21,9 @@ const ProjectViewer = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
+  
+  // View mode: 'layout' | 'satellite'
+  const [viewMode, setViewMode] = useState('layout');
 
   useEffect(() => {
     loadProject();
@@ -26,6 +31,26 @@ const ProjectViewer = () => {
 
   const loadProject = async () => {
     try {
+      if (slug === 'example') {
+        // Load mock example
+        setProject({
+          id: 'example',
+          name: 'Sunrise Villas (Example)',
+          clientName: 'Demo Real Estate',
+          brandColor: '#8b5cf6',
+          mapImageUrl: '/map-background.png',
+          imgDimensions: { width: 1000, height: 750 },
+          geoBounds: {
+            enabled: true,
+            topLeft: { lat: 21.2460, lng: 81.6275 },
+            bottomRight: { lat: 21.2435, lng: 81.6320 }
+          }
+        });
+        setPlots(mockPlots);
+        setLoading(false);
+        return;
+      }
+
       // Query project by slug
       const q = query(collection(db, 'projects'), where('slug', '==', slug));
       const querySnapshot = await getDocs(q);
@@ -95,12 +120,28 @@ const ProjectViewer = () => {
             <span>Booked</span>
           </div>
           <div className="nav-legend-item">
-            <div className="nav-legend-color sold"></div>
-            <span>Sold</span>
+            <div className="nav-legend-color registered"></div>
+            <span>Registered</span>
           </div>
         </div>
 
         <div className="viewer-actions">
+          <div className="view-toggle">
+            <button 
+              className={`toggle-btn ${viewMode === 'layout' ? 'active' : ''}`}
+              onClick={() => setViewMode('layout')}
+              title="Layout View"
+            >
+              🖼️ Layout
+            </button>
+            <button 
+              className={`toggle-btn ${viewMode === 'satellite' ? 'active' : ''}`}
+              onClick={() => setViewMode('satellite')}
+              title="Satellite View"
+            >
+              🛰️ Map
+            </button>
+          </div>
           <button className="btn-menu" onClick={() => setIsMenuOpen(true)} aria-label="Open menu">
             <Menu size={24} color="#333" />
           </button>
@@ -120,13 +161,23 @@ const ProjectViewer = () => {
         plotTypes={plotTypes}
       />
 
-      <MapViewer
-        project={project}
-        plots={plots}
-        searchQuery={searchQuery}
-        filterType={filterType}
-        filterStatus={filterStatus}
-      />
+      {viewMode === 'layout' ? (
+        <MapViewer
+          project={project}
+          plots={plots}
+          searchQuery={searchQuery}
+          filterType={filterType}
+          filterStatus={filterStatus}
+        />
+      ) : (
+        <LeafletMapViewer
+          project={project}
+          plots={plots}
+          searchQuery={searchQuery}
+          filterType={filterType}
+          filterStatus={filterStatus}
+        />
+      )}
     </div>
   );
 };

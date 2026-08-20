@@ -128,7 +128,7 @@ const SidebarNav = ({
                     <option value="All">All Statuses</option>
                     <option value="Available">Available</option>
                     <option value="Booked">Booked</option>
-                    <option value="Sold">Sold</option>
+                    <option value="Registered">Registered</option>
                   </select>
 
                   {(filterType !== 'All' || filterStatus !== 'All' || searchQuery !== '') && (

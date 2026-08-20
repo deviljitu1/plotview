@@ -100,7 +100,43 @@
 
 .nav-legend-color.available { background: rgba(16, 185, 129, 0.9); }
 .nav-legend-color.booked { background: rgba(245, 158, 11, 0.9); }
-.nav-legend-color.sold { background: rgba(239, 68, 68, 0.9); }
+.nav-legend-color.registered { background: rgba(239, 68, 68, 0.9); }
+.nav-legend-color.registered { background: rgba(239, 68, 68, 0.9); }
+
+.view-toggle {
+  display: flex;
+  background: #f1f5f9;
+  border-radius: 6px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.toggle-btn {
+  background: transparent;
+  border: none;
+  padding: 0.35rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: 'Inter', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.toggle-btn:hover {
+  color: #334155;
+  background: #e2e8f0;
+}
+
+.toggle-btn.active {
+  background: #fff;
+  color: #0f172a;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
 
 .btn-menu {
   background: none;
