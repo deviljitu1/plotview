@@ -270,9 +270,9 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
                               {arrow && (
                                 <text 
                                   x={cx} 
-                                  y={cy - 6} 
+                                  y={cy} 
                                   fill="#fff" 
-                                  fontSize="14" 
+                                  fontSize="16" 
                                   fontWeight="bold"
                                   textAnchor="middle" 
                                   alignmentBaseline="middle"
@@ -281,18 +281,6 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
                                   {arrow}
                                 </text>
                               )}
-                              <text 
-                                x={cx} 
-                                y={arrow ? cy + 8 : cy} 
-                                fill="#fff" 
-                                fontSize="10" 
-                                fontWeight="bold"
-                                textAnchor="middle" 
-                                alignmentBaseline="middle"
-                                style={{ pointerEvents: 'none', filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.8))' }}
-                              >
-                                {plot.name}
-                              </text>
                             </>
                           )}
                         </g>
