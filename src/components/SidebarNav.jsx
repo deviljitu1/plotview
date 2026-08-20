@@ -3,6 +3,8 @@ import { X, Share2, Search, Filter, Check } from 'lucide-react';
 import WhatsAppIcon from '../assets/whatsapp-color-svgrepo-com.svg';
 import CallIcon from '../assets/accept-call-icon.svg';
 import MapIcon from '../assets/map-icon.svg';
+import DocumentIcon from '../assets/document icon.svg';
+import { generateBrochure } from '../utils/generateBrochure';
 import './SidebarNav.css';
 
 const SidebarNav = ({
@@ -15,10 +17,12 @@ const SidebarNav = ({
   setFilterType,
   filterStatus,
   setFilterStatus,
-  plotTypes
+  plotTypes,
+  plots
 }) => {
   const [copied, setCopied] = useState(false);
   const [expandedSection, setExpandedSection] = useState(null); // 'search', 'filter', or null
+  const [isGenerating, setIsGenerating] = useState(false);
 
   React.useEffect(() => {
     if (!isOpen) {
@@ -50,6 +54,23 @@ const SidebarNav = ({
 
   const toggleSection = (section) => {
     setExpandedSection(expandedSection === section ? null : section);
+  };
+
+  const handleBrochureDownload = async () => {
+    if (project?.customBrochureUrl) {
+      window.open(project.customBrochureUrl, '_blank', 'noopener,noreferrer');
+      return;
+    }
+    
+    // Auto-generate brochure
+    setIsGenerating(true);
+    try {
+      await generateBrochure(project, plots);
+    } catch (err) {
+      alert("Failed to generate brochure. Please try again.");
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
   return (
@@ -92,6 +113,20 @@ const SidebarNav = ({
                 <img src={MapIcon} alt="Map" style={{ width: '22px', height: '22px' }} />
               </button>
             )}
+
+            <button 
+              className="sidebar-action-item" 
+              onClick={handleBrochureDownload} 
+              title="Download Brochure"
+              disabled={isGenerating}
+              style={{ opacity: isGenerating ? 0.6 : 1 }}
+            >
+              {isGenerating ? (
+                <div style={{ width: '22px', height: '22px', border: '3px solid #ccc', borderTopColor: '#6366f1', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+              ) : (
+                <img src={DocumentIcon} alt="Brochure" style={{ width: '22px', height: '22px' }} />
+              )}
+            </button>
 
             {/* Expandable Search */}
             <div className="sidebar-expandable">

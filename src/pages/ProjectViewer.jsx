@@ -139,6 +139,7 @@ const ProjectViewer = () => {
         filterStatus={filterStatus}
         setFilterStatus={setFilterStatus}
         plotTypes={plotTypes}
+        plots={plots}
       />
 
       <MapViewer

@@ -41,6 +41,11 @@ const ProjectEditor = () => {
   const [imagePreview, setImagePreview] = useState('');
   const [uploadingImage, setUploadingImage] = useState(false);
 
+  // Brochure
+  const [customBrochureFile, setCustomBrochureFile] = useState(null);
+  const [customBrochureUrl, setCustomBrochureUrl] = useState('');
+  const [brochureFileName, setBrochureFileName] = useState('');
+
   // Plots
   const [plots, setPlots] = useState([]);
   const [editingPlot, setEditingPlot] = useState(null); // index or null
@@ -105,6 +110,8 @@ const ProjectEditor = () => {
         setMapImageUrl(data.mapImageUrl || '');
         setImagePreview(data.mapImageUrl || '');
         setImgDimensions(data.imgDimensions || { width: 1000, height: 750 });
+        
+        setCustomBrochureUrl(data.customBrochureUrl || '');
         
         // Load plots subcollection
         const plotsSnap = await getDocs(collection(db, 'projects', id, 'plots'));
@@ -352,6 +359,34 @@ const ProjectEditor = () => {
     }
   }, []);
 
+  const handleBrochureUpload = useCallback((e) => {
+    const file = e.target?.files?.[0];
+    if (file && file.type === 'application/pdf') {
+      setCustomBrochureFile(file);
+      setBrochureFileName(file.name);
+    } else if (file) {
+      alert("Please upload a valid PDF file.");
+    }
+  }, []);
+
+  const uploadBrochureToFirebase = async (projectId) => {
+    if (!customBrochureFile) return customBrochureUrl;
+    setUploadingImage(true);
+    setSaveStatus('Uploading Brochure...');
+    try {
+      const storageRef = ref(storage, `brochures/${projectId}/${customBrochureFile.name}`);
+      await uploadBytes(storageRef, customBrochureFile);
+      const url = await getDownloadURL(storageRef);
+      setCustomBrochureUrl(url);
+      setUploadingImage(false);
+      return url;
+    } catch (err) {
+      console.error('Error uploading brochure:', err);
+      setUploadingImage(false);
+      return customBrochureUrl;
+    }
+  };
+
   // Plot CRUD
   const addPlot = () => {
     if (!plotForm.name) return alert('Plot name is required.');
@@ -461,6 +496,8 @@ const ProjectEditor = () => {
       const imageUrl = await uploadImage(projectId);
       console.log('Image uploaded/processed. URL:', imageUrl);
 
+      const brochureUrl = await uploadBrochureToFirebase(projectId);
+
       // Save project doc
       setSaveStatus('Saving Project Data...');
       console.log('Step 2: Saving project document to Firestore...');
@@ -474,6 +511,7 @@ const ProjectEditor = () => {
         contactPhone,
         whatsappNumber,
         mapImageUrl: imageUrl,
+        customBrochureUrl: brochureUrl,
         imgDimensions,
         plotCount: plots.length,
         googleMapsUrl,
@@ -636,6 +674,22 @@ const ProjectEditor = () => {
                 <div className="form-group full-width">
                   <label>Google Maps Location URL</label>
                   <input value={googleMapsUrl} onChange={e => setGoogleMapsUrl(e.target.value)} placeholder="e.g. https://maps.app.goo.gl/..." />
+                </div>
+                <div className="form-group full-width">
+                  <label>Custom Brochure (PDF)</label>
+                  <input 
+                    type="file" 
+                    accept="application/pdf" 
+                    onChange={handleBrochureUpload} 
+                    className="file-input"
+                  />
+                  {brochureFileName && <p className="form-hint" style={{marginTop: '0.5rem', color: '#10b981'}}>Selected: {brochureFileName}</p>}
+                  {!brochureFileName && customBrochureUrl && (
+                    <p className="form-hint" style={{marginTop: '0.5rem'}}>
+                      <a href={customBrochureUrl} target="_blank" rel="noopener noreferrer" style={{color: '#6366f1'}}>View Current Brochure</a>
+                    </p>
+                  )}
+                  <p className="form-hint">Upload a custom PDF brochure. If not provided, a beautiful auto-generated brochure will be created for clients to download.</p>
                 </div>
               </div>
             </div>
