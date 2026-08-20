@@ -4,7 +4,7 @@ import { Search, Filter, X, RotateCcw, RotateCw } from 'lucide-react';
 import PlotDetailsModal from './PlotDetailsModal';
 import './MapViewer.css';
 
-const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterStatus }) => {
+const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterStatus, northOffset = 0 }) => {
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [containerSize, setContainerSize] = useState(null);
   const [rotation, setRotation] = useState(0);
@@ -192,7 +192,7 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
             {({ zoomIn, zoomOut, resetTransform }) => (
               <>
                 <div className="controls">
-                  <div className="compass-indicator" style={{ transform: `rotate(${rotation}deg)` }} title="North Direction">
+                  <div className="compass-indicator" style={{ transform: `rotate(${rotation + Number(northOffset)}deg)` }} title="North Direction">
                     <span className="compass-n">N</span>
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                       <polygon points="12 2 19 21 12 17 5 21 12 2" />

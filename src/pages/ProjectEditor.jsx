@@ -25,6 +25,7 @@ const ProjectEditor = () => {
   const [description, setDescription] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
+  const [northOffset, setNorthOffset] = useState(0);
   
   const [googleMapsUrl, setGoogleMapsUrl] = useState('');
   
@@ -100,6 +101,8 @@ const ProjectEditor = () => {
         setDescription(data.description || '');
         setContactPhone(data.contactPhone || '');
         setWhatsappNumber(data.whatsappNumber || '');
+        setNorthOffset(data.northOffset || 0);
+        
         setGoogleMapsUrl(data.googleMapsUrl || '');
         
         setEnableSatellite(data.geoBounds?.enabled || false);
@@ -518,6 +521,7 @@ const ProjectEditor = () => {
         description,
         contactPhone,
         whatsappNumber,
+        northOffset: Number(northOffset),
         mapImageUrl: imageUrl,
         customBrochureUrl: brochureUrl,
         imgDimensions,
@@ -648,6 +652,11 @@ const ProjectEditor = () => {
                     <input type="color" value={brandColor} onChange={e => setBrandColor(e.target.value)} className="color-picker" />
                     <input value={brandColor} onChange={e => setBrandColor(e.target.value)} placeholder="#6366f1" />
                   </div>
+                </div>
+                <div className="form-group">
+                  <label>Map North Orientation (°)</label>
+                  <input type="number" value={northOffset} onChange={e => setNorthOffset(e.target.value)} placeholder="0" min="-360" max="360" />
+                  <span className="form-hint">Angle of North relative to the top of image (0 = Up).</span>
                 </div>
                 <div className="form-group">
                   <label>Client Logo</label>

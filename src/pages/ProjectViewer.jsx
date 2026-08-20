@@ -148,6 +148,7 @@ const ProjectViewer = () => {
         searchQuery={searchQuery}
         filterType={filterType}
         filterStatus={filterStatus}
+        northOffset={project?.northOffset || 0}
       />
     </div>
   );
