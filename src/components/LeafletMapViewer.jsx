@@ -69,12 +69,13 @@ const LeafletMapViewer = ({ project, plots: plotsData, searchQuery, filterType, 
         center={mapCenter} 
         zoom={17} 
         style={{ width: '100%', height: '100%' }}
-        maxZoom={20}
+        maxZoom={22}
       >
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
           attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
-          maxZoom={20}
+          maxNativeZoom={18}
+          maxZoom={22}
         />
         
         {hasPlots && plotsData.map((plot) => {
