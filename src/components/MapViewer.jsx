@@ -139,19 +139,26 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
   // react-zoom-pan-pinch so initialScale=1 means "fit the whole map".
   let svgW = imgDim.width;
   let svgH = imgDim.height;
+  let rotationScale = 1;
+
   if (containerSize) {
-    // Calculate the bounding box of the rotated image
-    const rad = (rotation * Math.PI) / 180;
-    const boundingW = Math.abs(imgDim.width * Math.cos(rad)) + Math.abs(imgDim.height * Math.sin(rad));
-    const boundingH = Math.abs(imgDim.width * Math.sin(rad)) + Math.abs(imgDim.height * Math.cos(rad));
-    
-    // Scale needed to fit the rotated bounding box into the container
-    const scaleX = containerSize.width / boundingW;
-    const scaleY = containerSize.height / boundingH;
+    // 1. Calculate static fit scale (0 degrees)
+    const scaleX = containerSize.width / imgDim.width;
+    const scaleY = containerSize.height / imgDim.height;
     const fitScale = Math.min(scaleX, scaleY);
     
     svgW = imgDim.width * fitScale;
     svgH = imgDim.height * fitScale;
+
+    // 2. Calculate dynamic rotation scale to keep corners inside
+    const rad = (rotation * Math.PI) / 180;
+    const renderedBoundingW = Math.abs(svgW * Math.cos(rad)) + Math.abs(svgH * Math.sin(rad));
+    const renderedBoundingH = Math.abs(svgW * Math.sin(rad)) + Math.abs(svgH * Math.cos(rad));
+
+    const rotScaleX = containerSize.width / renderedBoundingW;
+    const rotScaleY = containerSize.height / renderedBoundingH;
+    rotationScale = Math.min(rotScaleX, rotScaleY);
+    if (rotationScale > 1) rotationScale = 1; // Only shrink if needed
   }
 
   return (
@@ -230,7 +237,7 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
                     height={svgH}
                     viewBox={`0 0 ${imgDim.width} ${imgDim.height}`}
                     className="interactive-map"
-                    style={{ transform: `rotate(${rotation}deg)`, transition: 'transform 0.3s ease' }}
+                    style={{ transform: `scale(${rotationScale}) rotate(${rotation}deg)`, transition: 'transform 0.3s ease' }}
                   >
                     {/* Background Map Image */}
                     <image
