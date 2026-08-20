@@ -5,6 +5,16 @@ import './PlotDetailsModal.css';
 const PlotDetailsModal = ({ plot, project, brandColor, onClose }) => {
   if (!plot) return null;
 
+  const formatPhone = (num) => {
+    const clean = num.replace(/\s+/g, '');
+    return clean.length === 10 ? `+91${clean}` : clean;
+  };
+
+  const formatWhatsApp = (num) => {
+    const clean = num.replace(/\D/g, '');
+    return clean.length === 10 ? `91${clean}` : clean;
+  };
+
   // Prevent body scroll while modal is open
   useEffect(() => {
     document.body.style.overflow = 'hidden';
@@ -62,14 +72,14 @@ const PlotDetailsModal = ({ plot, project, brandColor, onClose }) => {
 
           <div className="action-row">
             <a 
-              href={project?.contactPhone ? `tel:${project.contactPhone.replace(/\s+/g, '')}` : '#'} 
+              href={project?.contactPhone ? `tel:${formatPhone(project.contactPhone)}` : '#'} 
               className={`btn-action btn-call ${!project?.contactPhone ? 'disabled' : ''}`}
               onClick={(e) => !project?.contactPhone && e.preventDefault()}
             >
               <Phone size={16} /> Call
             </a>
             <a 
-              href={project?.whatsappNumber ? `https://wa.me/${project.whatsappNumber.replace(/\D/g, '')}?text=${encodeURIComponent(`Hello, I am interested in plot ${plot.name} at ${project.name}`)}` : '#'} 
+              href={project?.whatsappNumber ? `https://wa.me/${formatWhatsApp(project.whatsappNumber)}?text=${encodeURIComponent(`Hello, I am interested in plot ${plot.name} at ${project?.name || 'your project'}`)}` : '#'} 
               target="_blank" 
               rel="noopener noreferrer" 
               className={`btn-action btn-whatsapp ${!project?.whatsappNumber ? 'disabled' : ''}`}
