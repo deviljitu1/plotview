@@ -47,9 +47,35 @@ const SidebarNav = ({
     }
   };
 
+  const formatPhone = (num) => {
+    if (!num) return '';
+    const clean = num.replace(/\s+/g, '');
+    return clean.length === 10 ? `+91${clean}` : clean;
+  };
+
+  const formatWhatsApp = (num) => {
+    if (!num) return '';
+    const clean = num.replace(/\D/g, '');
+    return clean.length === 10 ? `91${clean}` : clean;
+  };
+
   const handleWhatsApp = () => {
-    const text = `Hi, I am interested in knowing more about the project: ${project?.name}`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+    const waNum = project?.whatsappNumber || project?.contactPhone;
+    if (!waNum) {
+      alert("WhatsApp number is not available for this project.");
+      return;
+    }
+    const text = `Hi, I am interested in knowing more about the project: ${project?.name || 'your project'}`;
+    window.open(`https://wa.me/${formatWhatsApp(waNum)}?text=${encodeURIComponent(text)}`, '_blank');
+  };
+
+  const handleCall = () => {
+    const phoneNum = project?.contactPhone || project?.whatsappNumber;
+    if (!phoneNum) {
+      alert("Contact number is not available for this project.");
+      return;
+    }
+    window.location.href = `tel:${formatPhone(phoneNum)}`;
   };
 
   const toggleSection = (section) => {
@@ -100,7 +126,7 @@ const SidebarNav = ({
               <img src={WhatsAppIcon} alt="WhatsApp" style={{ width: '22px', height: '22px' }} />
             </button>
 
-            <button className="sidebar-action-item" onClick={() => window.location.href = `tel:`} title="Contact Us">
+            <button className="sidebar-action-item" onClick={handleCall} title="Contact Us">
               <img src={CallIcon} alt="Call" style={{ width: '22px', height: '22px' }} />
             </button>
 
