@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { X, Share2, Search, Filter, Check } from 'lucide-react';
 import WhatsAppIcon from '../assets/whatsapp-color-svgrepo-com.svg';
 import CallIcon from '../assets/accept-call-icon.svg';
+import MapIcon from '../assets/map-icon.svg';
 import './SidebarNav.css';
 
 const SidebarNav = ({
@@ -81,6 +82,16 @@ const SidebarNav = ({
             <button className="sidebar-action-item" onClick={() => window.location.href = `tel:`} title="Contact Us">
               <img src={CallIcon} alt="Call" style={{ width: '22px', height: '22px' }} />
             </button>
+
+            {project?.googleMapsUrl && (
+              <button 
+                className="sidebar-action-item" 
+                onClick={() => window.open(project.googleMapsUrl, '_blank', 'noopener,noreferrer')} 
+                title="View on Map"
+              >
+                <img src={MapIcon} alt="Map" style={{ width: '22px', height: '22px' }} />
+              </button>
+            )}
 
             {/* Expandable Search */}
             <div className="sidebar-expandable">
