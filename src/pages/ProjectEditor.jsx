@@ -9,7 +9,7 @@ import PlotDetailsModal from '../components/PlotDetailsModal';
 import MapAligner from '../components/MapAligner';
 import './ProjectEditor.css';
 
-const TABS = ['details', 'plots'];
+const TABS = ['details', 'plots', 'align'];
 
 const ProjectEditor = () => {
   const { id } = useParams(); // undefined if new
