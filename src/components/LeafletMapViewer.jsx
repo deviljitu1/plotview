@@ -14,7 +14,7 @@ const LeafletMapViewer = ({ project, plots: plotsData, searchQuery, filterType, 
   const geoBounds = project?.geoBounds; // { topLeft: { lat, lng }, bottomRight: { lat, lng } }
   const imgDim = project?.imgDimensions || { width: 1000, height: 750 };
   
-  const hasGeoreferencing = geoBounds && geoBounds.topLeft && geoBounds.bottomRight;
+  const hasGeoreferencing = geoBounds?.enabled && geoBounds?.topLeft && geoBounds?.bottomRight;
 
   const getFillColor = (status) => {
     switch (status) {
