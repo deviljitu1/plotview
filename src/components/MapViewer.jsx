@@ -8,6 +8,7 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
   const [selectedPlot, setSelectedPlot] = useState(null);
   const [containerSize, setContainerSize] = useState(null);
   const [rotation, setRotation] = useState(0);
+  const [initialAngle, setInitialAngle] = useState(null);
   const containerRef = useRef(null);
   const mapImageUrl = project?.mapImageUrl || project?.backgroundUrl || '';
 
@@ -51,7 +52,6 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
     return true;
   };
 
-  // Measure the container and compute the SVG pixel dimensions that fit
   const measure = useCallback(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -60,6 +60,30 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
     if (w === 0 || h === 0) return;
     setContainerSize({ width: w, height: h });
   }, []);
+
+  const handleTouchStart = (e) => {
+    if (e.touches.length === 2) {
+      const dx = e.touches[1].clientX - e.touches[0].clientX;
+      const dy = e.touches[1].clientY - e.touches[0].clientY;
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      setInitialAngle(angle - rotation);
+    }
+  };
+
+  const handleTouchMove = (e) => {
+    if (e.touches.length === 2 && initialAngle !== null) {
+      const dx = e.touches[1].clientX - e.touches[0].clientX;
+      const dy = e.touches[1].clientY - e.touches[0].clientY;
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI);
+      setRotation(angle - initialAngle);
+    }
+  };
+
+  const handleTouchEnd = (e) => {
+    if (e.touches.length < 2) {
+      setInitialAngle(null);
+    }
+  };
 
   useEffect(() => {
     // Measure after initial layout
@@ -90,7 +114,14 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
 
   return (
     <div className="map-viewer-wrap">
-      <div className="map-viewer" ref={containerRef}>
+      <div 
+        className="map-viewer" 
+        ref={containerRef}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchEnd}
+      >
         {!mapImageUrl && (
           <div className="map-empty-state">
             <h2>Map image missing</h2>

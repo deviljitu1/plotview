@@ -118,7 +118,7 @@
 .controls {
   position: absolute;
   bottom: 1.25rem;
-  right: 1.25rem;
+  left: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -172,7 +172,7 @@
   }
   .controls {
     position: fixed;
-    right: max(0.6rem, env(safe-area-inset-right));
+    left: max(0.6rem, env(safe-area-inset-left));
     bottom: max(0.6rem, env(safe-area-inset-bottom));
     flex-direction: row;
     gap: 0.3rem;
