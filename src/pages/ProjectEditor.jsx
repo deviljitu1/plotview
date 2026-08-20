@@ -28,6 +28,13 @@ const ProjectEditor = () => {
   
   const [googleMapsUrl, setGoogleMapsUrl] = useState('');
   
+  // Georeferencing
+  const [enableSatellite, setEnableSatellite] = useState(false);
+  const [geoTopLeftLat, setGeoTopLeftLat] = useState('');
+  const [geoTopLeftLng, setGeoTopLeftLng] = useState('');
+  const [geoBottomRightLat, setGeoBottomRightLat] = useState('');
+  const [geoBottomRightLng, setGeoBottomRightLng] = useState('');
+
   // Map Image
   const [mapImageUrl, setMapImageUrl] = useState('');
   const [mapImageFile, setMapImageFile] = useState(null);
@@ -87,12 +94,18 @@ const ProjectEditor = () => {
         setDescription(data.description || '');
         setContactPhone(data.contactPhone || '');
         setWhatsappNumber(data.whatsappNumber || '');
+        setGoogleMapsUrl(data.googleMapsUrl || '');
+        
+        setEnableSatellite(data.geoBounds?.enabled || false);
+        setGeoTopLeftLat(data.geoBounds?.topLeft?.lat || '');
+        setGeoTopLeftLng(data.geoBounds?.topLeft?.lng || '');
+        setGeoBottomRightLat(data.geoBounds?.bottomRight?.lat || '');
+        setGeoBottomRightLng(data.geoBounds?.bottomRight?.lng || '');
+
         setMapImageUrl(data.mapImageUrl || '');
         setImagePreview(data.mapImageUrl || '');
         setImgDimensions(data.imgDimensions || { width: 1000, height: 750 });
         
-        setGoogleMapsUrl(data.googleMapsUrl || '');
-
         // Load plots subcollection
         const plotsSnap = await getDocs(collection(db, 'projects', id, 'plots'));
         const plotsList = plotsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -461,6 +474,11 @@ const ProjectEditor = () => {
         imgDimensions,
         plotCount: plots.length,
         googleMapsUrl,
+        geoBounds: {
+          enabled: enableSatellite,
+          topLeft: { lat: Number(geoTopLeftLat) || 0, lng: Number(geoTopLeftLng) || 0 },
+          bottomRight: { lat: Number(geoBottomRightLat) || 0, lng: Number(geoBottomRightLng) || 0 }
+        },
         updatedAt: new Date().toISOString(),
         ...(!isEditing && { createdAt: new Date().toISOString() })
       }, { merge: true });
@@ -639,6 +657,45 @@ const ProjectEditor = () => {
                   </div>
                 )}
                 <input id="mapInput" type="file" accept="image/*" onChange={handleImageDrop} hidden />
+              </div>
+            </div>
+
+            <div className="form-section">
+              <h3>Georeferencing (Satellite Map Integration)</h3>
+              <div className="form-grid">
+                <div className="form-group full-width">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                    <input 
+                      type="checkbox" 
+                      checked={enableSatellite} 
+                      onChange={e => setEnableSatellite(e.target.checked)} 
+                    />
+                    Enable Satellite Map View
+                  </label>
+                  <p className="form-hint" style={{ marginTop: '0.25rem' }}>
+                    Provide the Top-Left and Bottom-Right GPS coordinates of your layout image to enable the satellite map overlay.
+                  </p>
+                </div>
+                
+                {enableSatellite && (
+                  <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
+                    <MapAligner 
+                      imageUrl={imagePreview}
+                      initialTopLeft={
+                        geoTopLeftLat && geoTopLeftLng ? { lat: Number(geoTopLeftLat), lng: Number(geoTopLeftLng) } : null
+                      }
+                      initialBottomRight={
+                        geoBottomRightLat && geoBottomRightLng ? { lat: Number(geoBottomRightLat), lng: Number(geoBottomRightLng) } : null
+                      }
+                      onChange={(bounds) => {
+                        setGeoTopLeftLat(bounds.topLeft.lat);
+                        setGeoTopLeftLng(bounds.topLeft.lng);
+                        setGeoBottomRightLat(bounds.bottomRight.lat);
+                        setGeoBottomRightLng(bounds.bottomRight.lng);
+                      }}
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
