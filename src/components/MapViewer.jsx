@@ -221,25 +221,79 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
                     {/* Interactive Plot Overlays */}
                     {hasPlots && plotsData.map((plot) => {
                       const visible = isPlotVisible(plot);
+                      
+                      // Calculate center of polygon for label/arrow
+                      let cx = 0, cy = 0;
+                      if (visible && plot.points) {
+                        const pts = plot.points.trim().split(' ').map(p => p.split(',').map(Number));
+                        cx = pts.reduce((sum, p) => sum + p[0], 0) / pts.length;
+                        cy = pts.reduce((sum, p) => sum + p[1], 0) / pts.length;
+                      }
+
+                      const getFacingArrow = (facing) => {
+                        switch(facing?.toLowerCase()) {
+                          case 'north': return '↑';
+                          case 'south': return '↓';
+                          case 'east': return '→';
+                          case 'west': return '←';
+                          case 'north-east': return '↗';
+                          case 'north-west': return '↖';
+                          case 'south-east': return '↘';
+                          case 'south-west': return '↙';
+                          default: return '';
+                        }
+                      };
+
+                      const arrow = getFacingArrow(plot.facing);
+
                       return (
                         <g 
                           key={plot.id} 
                           onClick={visible ? () => handlePlotClick(plot) : undefined} 
                           className={`plot-group ${visible ? '' : 'plot-hidden'}`}
+                          style={{ cursor: visible ? 'pointer' : 'default' }}
                         >
                           <polygon
                             points={plot.points}
                             fill={visible ? getFillColor(plot.status) : 'rgba(0,0,0,0.1)'}
-                            stroke={visible ? 'rgba(255,255,255,0.6)' : 'transparent'}
+                            stroke={visible ? 'rgba(255,255,255,0.8)' : 'transparent'}
                             strokeWidth="1.5"
                             className="plot-polygon"
                           />
                           {visible && (
-                            <polygon
-                              points={plot.points}
-                              fill="transparent"
-                              className="plot-polygon-hover"
-                            />
+                            <>
+                              <polygon
+                                points={plot.points}
+                                fill="transparent"
+                                className="plot-polygon-hover"
+                              />
+                              {arrow && (
+                                <text 
+                                  x={cx} 
+                                  y={cy - 6} 
+                                  fill="#fff" 
+                                  fontSize="14" 
+                                  fontWeight="bold"
+                                  textAnchor="middle" 
+                                  alignmentBaseline="middle"
+                                  style={{ pointerEvents: 'none', filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.8))' }}
+                                >
+                                  {arrow}
+                                </text>
+                              )}
+                              <text 
+                                x={cx} 
+                                y={arrow ? cy + 8 : cy} 
+                                fill="#fff" 
+                                fontSize="10" 
+                                fontWeight="bold"
+                                textAnchor="middle" 
+                                alignmentBaseline="middle"
+                                style={{ pointerEvents: 'none', filter: 'drop-shadow(0px 1px 2px rgba(0,0,0,0.8))' }}
+                              >
+                                {plot.name}
+                              </text>
+                            </>
                           )}
                         </g>
                       );
