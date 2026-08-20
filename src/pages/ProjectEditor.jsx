@@ -6,6 +6,7 @@ import { db, storage } from '../lib/firebase';
 import { v4 as uuidv4 } from 'uuid';
 import * as XLSX from 'xlsx';
 import PlotDetailsModal from '../components/PlotDetailsModal';
+import MapAligner from '../components/MapAligner';
 import './ProjectEditor.css';
 
 const TABS = ['details', 'plots', 'align'];
@@ -648,24 +649,23 @@ const ProjectEditor = () => {
                 </div>
                 
                 {enableSatellite && (
-                  <>
-                    <div className="form-group">
-                      <label>Top-Left Latitude</label>
-                      <input type="number" step="any" value={geoTopLeftLat} onChange={e => setGeoTopLeftLat(e.target.value)} placeholder="e.g. 21.2460" />
-                    </div>
-                    <div className="form-group">
-                      <label>Top-Left Longitude</label>
-                      <input type="number" step="any" value={geoTopLeftLng} onChange={e => setGeoTopLeftLng(e.target.value)} placeholder="e.g. 81.6275" />
-                    </div>
-                    <div className="form-group">
-                      <label>Bottom-Right Latitude</label>
-                      <input type="number" step="any" value={geoBottomRightLat} onChange={e => setGeoBottomRightLat(e.target.value)} placeholder="e.g. 21.2435" />
-                    </div>
-                    <div className="form-group">
-                      <label>Bottom-Right Longitude</label>
-                      <input type="number" step="any" value={geoBottomRightLng} onChange={e => setGeoBottomRightLng(e.target.value)} placeholder="e.g. 81.6320" />
-                    </div>
-                  </>
+                  <div style={{ gridColumn: '1 / -1', marginTop: '1rem' }}>
+                    <MapAligner 
+                      imageUrl={imagePreview}
+                      initialTopLeft={
+                        geoTopLeftLat && geoTopLeftLng ? { lat: Number(geoTopLeftLat), lng: Number(geoTopLeftLng) } : null
+                      }
+                      initialBottomRight={
+                        geoBottomRightLat && geoBottomRightLng ? { lat: Number(geoBottomRightLat), lng: Number(geoBottomRightLng) } : null
+                      }
+                      onChange={(bounds) => {
+                        setGeoTopLeftLat(bounds.topLeft.lat);
+                        setGeoTopLeftLng(bounds.topLeft.lng);
+                        setGeoBottomRightLat(bounds.bottomRight.lat);
+                        setGeoBottomRightLng(bounds.bottomRight.lng);
+                      }}
+                    />
+                  </div>
                 )}
               </div>
             </div>
