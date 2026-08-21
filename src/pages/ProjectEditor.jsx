@@ -672,9 +672,39 @@ const ProjectEditor = () => {
                     onDragOver={e => e.preventDefault()}
                     onDrop={handleLogoDrop}
                     onClick={() => document.getElementById('logoInput').click()}
+                    style={{ position: 'relative' }}
                   >
                     {clientLogo ? (
-                      <img src={clientLogo} alt="Client Logo" className="logo-preview" />
+                      <>
+                        <img src={clientLogo} alt="Client Logo" className="logo-preview" />
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setClientLogo('');
+                          }}
+                          style={{
+                            position: 'absolute',
+                            top: '4px',
+                            right: '4px',
+                            background: 'rgba(239, 68, 68, 0.9)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            width: '24px',
+                            height: '24px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            cursor: 'pointer',
+                            padding: 0,
+                            fontWeight: 'bold'
+                          }}
+                          title="Remove Logo"
+                        >
+                          ×
+                        </button>
+                      </>
                     ) : (
                       <span>Drag & drop or click to upload logo</span>
                     )}
@@ -702,16 +732,44 @@ const ProjectEditor = () => {
                 <div className="form-group full-width">
                   <label>Custom Brochure (PDF)</label>
                   <input 
+                    id="brochureInput"
                     type="file" 
                     accept="application/pdf" 
                     onChange={handleBrochureUpload} 
                     className="file-input"
                   />
-                  {brochureFileName && <p className="form-hint" style={{marginTop: '0.5rem', color: '#10b981'}}>Selected: {brochureFileName}</p>}
-                  {!brochureFileName && customBrochureUrl && (
-                    <p className="form-hint" style={{marginTop: '0.5rem'}}>
-                      <a href={customBrochureUrl} target="_blank" rel="noopener noreferrer" style={{color: '#6366f1'}}>View Current Brochure</a>
-                    </p>
+                  {(brochureFileName || customBrochureUrl) && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
+                      {brochureFileName ? (
+                        <p className="form-hint" style={{ color: '#10b981', margin: 0 }}>Selected: {brochureFileName}</p>
+                      ) : (
+                        <p className="form-hint" style={{ margin: 0 }}>
+                          <a href={customBrochureUrl} target="_blank" rel="noopener noreferrer" style={{color: '#6366f1'}}>View Current Brochure</a>
+                        </p>
+                      )}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          setCustomBrochureFile(null);
+                          setBrochureFileName('');
+                          setCustomBrochureUrl('');
+                          const fileInput = document.getElementById('brochureInput');
+                          if (fileInput) fileInput.value = '';
+                        }}
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#ef4444',
+                          cursor: 'pointer',
+                          fontSize: '0.875rem',
+                          padding: 0,
+                          textDecoration: 'underline'
+                        }}
+                      >
+                        Remove Brochure
+                      </button>
+                    </div>
                   )}
                   <p className="form-hint">Upload a custom PDF brochure. If not provided, a beautiful auto-generated brochure will be created for clients to download.</p>
                 </div>
@@ -761,7 +819,45 @@ const ProjectEditor = () => {
                 onClick={() => document.getElementById('mapInput').click()}
               >
                 {imagePreview ? (
-                  <img src={imagePreview} alt="Map Preview" className="map-preview-img" />
+                  <div style={{ position: 'relative', width: '100%', display: 'flex', justifyContent: 'center' }}>
+                    <img src={imagePreview} alt="Map Preview" className="map-preview-img" />
+                    <button 
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setMapImageFile(null);
+                        setMapImageUrl('');
+                        setImagePreview('');
+                      }}
+                      style={{
+                        position: 'absolute',
+                        top: '10px',
+                        right: '10px',
+                        background: 'rgba(239, 68, 68, 0.9)',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '6px',
+                        padding: '6px 12px',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                      }}
+                    >
+                      Remove Image
+                    </button>
+                    <div style={{
+                        position: 'absolute',
+                        bottom: '10px',
+                        background: 'rgba(0,0,0,0.6)',
+                        color: 'white',
+                        borderRadius: '4px',
+                        padding: '4px 12px',
+                        pointerEvents: 'none',
+                        fontSize: '0.875rem'
+                      }}>
+                      Click or drag to change
+                    </div>
+                  </div>
                 ) : (
                   <div className="drop-placeholder">
                     <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="1.5">
