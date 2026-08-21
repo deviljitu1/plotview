@@ -325,26 +325,69 @@ const ProjectEditor = () => {
     }
   }, []);
 
+  const compressImage = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          
+          const MAX_SIZE = 4096;
+          if (width > MAX_SIZE || height > MAX_SIZE) {
+            if (width > height) {
+              height *= MAX_SIZE / width;
+              width = MAX_SIZE;
+            } else {
+              width *= MAX_SIZE / height;
+              height = MAX_SIZE;
+            }
+          }
+          
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+          
+          canvas.toBlob((blob) => {
+            if (!blob) return reject(new Error('Canvas is empty'));
+            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+              type: 'image/webp',
+              lastModified: Date.now(),
+            });
+            resolve(compressedFile);
+          }, 'image/webp', 0.8);
+        };
+        img.onerror = (err) => reject(err);
+        img.src = event.target.result;
+      };
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
   const uploadImage = async (projectId) => {
     if (!mapImageFile) return mapImageUrl;
     setUploadingImage(true);
+    setSaveStatus('Compressing & Uploading Map...');
     try {
-      const storageRef = ref(storage, `maps/${projectId}/${mapImageFile.name}`);
-      const uploadTask = uploadBytesResumable(storageRef, mapImageFile);
+      const compressedFile = await compressImage(mapImageFile);
       
-      await new Promise((resolve, reject) => {
-        uploadTask.on('state_changed', 
-          (snapshot) => {
-            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-            setSaveStatus(`Uploading Image... ${Math.round(progress)}%`);
-          },
-          (error) => reject(error),
-          () => resolve()
-        );
-      });
+      const formData = new FormData();
+      formData.append('file', compressedFile);
+      formData.append('upload_preset', 'ml_default');
 
-      const url = await getDownloadURL(storageRef);
+      const res = await fetch('https://api.cloudinary.com/v1_1/djm7sh0zd/image/upload', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
       
+      if (!res.ok) throw new Error(data.error?.message || 'Upload failed');
+      
+      const url = data.secure_url;
       setMapImageUrl(url);
       setUploadingImage(false);
       return url;
@@ -361,11 +404,22 @@ const ProjectEditor = () => {
     const file = e.dataTransfer?.files?.[0] || e.target?.files?.[0];
     if (file && file.type.startsWith('image/')) {
       try {
-        const storageRef = ref(storage, `logos/${uuidv4()}_${file.name}`);
-        await uploadBytes(storageRef, file);
-        const url = await getDownloadURL(storageRef);
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('upload_preset', 'ml_default');
+
+        const res = await fetch('https://api.cloudinary.com/v1_1/djm7sh0zd/image/upload', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
         
-        setClientLogo(url);
+        if (res.ok) {
+          setClientLogo(data.secure_url);
+        } else {
+          console.error('Cloudinary Error:', data.error?.message);
+          alert('Failed to upload logo: ' + data.error?.message);
+        }
       } catch (err) {
         console.error('Upload failed:', err);
         alert('Failed to upload logo: ' + err.message);
