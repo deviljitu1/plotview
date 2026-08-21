@@ -296,16 +296,6 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
                                 fill="transparent"
                                 className="plot-polygon-hover"
                               />
-                              {facingIconSrc && (
-                                <image
-                                  href={facingIconSrc}
-                                  x={cx - 12}
-                                  y={cy - 12}
-                                  width="24"
-                                  height="24"
-                                  style={{ pointerEvents: 'none' }}
-                                />
-                              )}
                             </>
                           )}
                         </g>

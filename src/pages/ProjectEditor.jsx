@@ -329,19 +329,10 @@ const ProjectEditor = () => {
     if (!mapImageFile) return mapImageUrl;
     setUploadingImage(true);
     try {
-      const formData = new FormData();
-      formData.append('file', mapImageFile);
-      formData.append('upload_preset', 'ml_default');
-
-      const res = await fetch('https://api.cloudinary.com/v1_1/djm7sh0zd/image/upload', {
-        method: 'POST',
-        body: formData
-      });
-      const data = await res.json();
+      const storageRef = ref(storage, `maps/${projectId}/${mapImageFile.name}`);
+      await uploadBytes(storageRef, mapImageFile);
+      const url = await getDownloadURL(storageRef);
       
-      if (!res.ok) throw new Error(data.error?.message || 'Upload failed');
-      
-      const url = data.secure_url;
       setMapImageUrl(url);
       setUploadingImage(false);
       return url;
@@ -358,24 +349,14 @@ const ProjectEditor = () => {
     const file = e.dataTransfer?.files?.[0] || e.target?.files?.[0];
     if (file && file.type.startsWith('image/')) {
       try {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('upload_preset', 'ml_default');
-
-        const res = await fetch('https://api.cloudinary.com/v1_1/djm7sh0zd/image/upload', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
+        const storageRef = ref(storage, `logos/${uuidv4()}_${file.name}`);
+        await uploadBytes(storageRef, file);
+        const url = await getDownloadURL(storageRef);
         
-        if (res.ok) {
-          setClientLogo(data.secure_url);
-        } else {
-          console.error('Cloudinary Error:', data.error?.message);
-          alert('Failed to upload logo: ' + data.error?.message);
-        }
+        setClientLogo(url);
       } catch (err) {
         console.error('Upload failed:', err);
+        alert('Failed to upload logo: ' + err.message);
       }
     }
   }, []);
