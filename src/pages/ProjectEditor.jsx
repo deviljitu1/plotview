@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc, setDoc, collection, getDocs, writeBatch, deleteDoc } from 'firebase/firestore';
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { ref, uploadBytes, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { db, storage } from '../lib/firebase';
 import { v4 as uuidv4 } from 'uuid';
 import * as XLSX from 'xlsx';
@@ -330,7 +330,19 @@ const ProjectEditor = () => {
     setUploadingImage(true);
     try {
       const storageRef = ref(storage, `maps/${projectId}/${mapImageFile.name}`);
-      await uploadBytes(storageRef, mapImageFile);
+      const uploadTask = uploadBytesResumable(storageRef, mapImageFile);
+      
+      await new Promise((resolve, reject) => {
+        uploadTask.on('state_changed', 
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setSaveStatus(`Uploading Image... ${Math.round(progress)}%`);
+          },
+          (error) => reject(error),
+          () => resolve()
+        );
+      });
+
       const url = await getDownloadURL(storageRef);
       
       setMapImageUrl(url);
@@ -374,10 +386,22 @@ const ProjectEditor = () => {
   const uploadBrochureToFirebase = async (projectId) => {
     if (!customBrochureFile) return customBrochureUrl;
     setUploadingImage(true);
-    setSaveStatus('Uploading Brochure...');
+    setSaveStatus('Uploading Brochure... 0%');
     try {
       const storageRef = ref(storage, `brochures/${projectId}/${customBrochureFile.name}`);
-      await uploadBytes(storageRef, customBrochureFile);
+      const uploadTask = uploadBytesResumable(storageRef, customBrochureFile);
+      
+      await new Promise((resolve, reject) => {
+        uploadTask.on('state_changed', 
+          (snapshot) => {
+            const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+            setSaveStatus(`Uploading Brochure... ${Math.round(progress)}%`);
+          },
+          (error) => reject(error),
+          () => resolve()
+        );
+      });
+
       const url = await getDownloadURL(storageRef);
       setCustomBrochureUrl(url);
       setUploadingImage(false);
