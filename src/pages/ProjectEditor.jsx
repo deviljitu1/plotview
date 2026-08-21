@@ -353,7 +353,8 @@ const ProjectEditor = () => {
           
           canvas.toBlob((blob) => {
             if (!blob) return reject(new Error('Canvas is empty'));
-            const compressedFile = new File([blob], file.name.replace(/\.[^/.]+$/, "") + ".webp", {
+            const uniqueName = `${uuidv4()}_${file.name.replace(/\.[^/.]+$/, "")}.webp`;
+            const compressedFile = new File([blob], uniqueName, {
               type: 'image/webp',
               lastModified: Date.now(),
             });
@@ -405,7 +406,8 @@ const ProjectEditor = () => {
     if (file && file.type.startsWith('image/')) {
       try {
         const formData = new FormData();
-        formData.append('file', file);
+        // Append UUID to logo filename to prevent Cloudinary overwrites
+        formData.append('file', file, `${uuidv4()}_${file.name}`);
         formData.append('upload_preset', 'ml_default');
 
         const res = await fetch('https://api.cloudinary.com/v1_1/djm7sh0zd/image/upload', {
