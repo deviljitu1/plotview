@@ -466,4 +466,17 @@
     padding: 0.5rem;
     font-size: 0.85rem;
   }
+  .plot-details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .edit-actions {
+    flex-direction: column;
+  }
+  .client-login-card {
+    padding: 1.5rem;
+    margin: 1rem;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
 }
