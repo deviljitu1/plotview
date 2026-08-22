@@ -10,6 +10,9 @@ const ClientManager = () => {
   const [projectId, setProjectId] = useState(null);
   const [plots, setPlots] = useState([]);
   
+  const [editingPlotId, setEditingPlotId] = useState(null);
+  const [editForm, setEditForm] = useState({ name: '', type: '', size: '', area: '', status: 'Available' });
+
   const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -94,6 +97,43 @@ const ClientManager = () => {
     }
   };
 
+  const startEdit = (plot) => {
+    setEditingPlotId(plot.id);
+    setEditForm({
+      name: plot.name || '',
+      type: plot.type || '',
+      size: plot.size || '',
+      area: plot.area || '',
+      status: plot.status || 'Available'
+    });
+  };
+
+  const cancelEdit = () => {
+    setEditingPlotId(null);
+  };
+
+  const handleSavePlot = async (plotId) => {
+    setUpdating(plotId);
+    try {
+      const plotRef = doc(db, 'projects', projectId, 'plots', plotId);
+      const updatedData = {
+        name: editForm.name,
+        type: editForm.type,
+        size: editForm.size,
+        area: Number(editForm.area) || 0,
+        status: editForm.status
+      };
+      await updateDoc(plotRef, updatedData);
+      setPlots(prev => prev.map(p => p.id === plotId ? { ...p, ...updatedData } : p));
+      setEditingPlotId(null);
+    } catch (err) {
+      console.error('Error updating plot:', err);
+      alert('Failed to update plot. Please try again.');
+    } finally {
+      setUpdating(null);
+    }
+  };
+
   if (loading) {
     return <div className="client-manager-loading">Loading...</div>;
   }
@@ -156,23 +196,87 @@ const ClientManager = () => {
         <div className="plots-grid">
           {plots.map(plot => (
             <div key={plot.id} className="plot-manager-card">
-              <div className="plot-info">
-                <h3>{plot.name}</h3>
-                <span className="plot-type">{plot.type}</span>
-              </div>
-              <div className="plot-actions">
-                <select 
-                  value={plot.status}
-                  onChange={(e) => handleStatusChange(plot.id, e.target.value)}
-                  disabled={updating === plot.id}
-                  className={`status-select ${plot.status.toLowerCase()}`}
-                >
-                  <option value="Available">Available</option>
-                  <option value="Booked">Booked</option>
-                  <option value="Registered">Registered</option>
-                </select>
-                {updating === plot.id && <span className="updating-spinner" />}
-              </div>
+              {editingPlotId === plot.id ? (
+                <div className="plot-edit-form">
+                  <div className="edit-form-group">
+                    <label>Name</label>
+                    <input 
+                      value={editForm.name} 
+                      onChange={e => setEditForm({...editForm, name: e.target.value})} 
+                      placeholder="Name" 
+                    />
+                  </div>
+                  <div className="edit-form-group">
+                    <label>Type</label>
+                    <input 
+                      value={editForm.type} 
+                      onChange={e => setEditForm({...editForm, type: e.target.value})} 
+                      placeholder="Type" 
+                    />
+                  </div>
+                  <div className="edit-form-group">
+                    <label>Size</label>
+                    <input 
+                      value={editForm.size} 
+                      onChange={e => setEditForm({...editForm, size: e.target.value})} 
+                      placeholder="Size" 
+                    />
+                  </div>
+                  <div className="edit-form-group">
+                    <label>Area (sqft)</label>
+                    <input 
+                      type="number" 
+                      value={editForm.area} 
+                      onChange={e => setEditForm({...editForm, area: e.target.value})} 
+                      placeholder="Area" 
+                    />
+                  </div>
+                  <div className="edit-form-group">
+                    <label>Status</label>
+                    <select 
+                      value={editForm.status} 
+                      onChange={e => setEditForm({...editForm, status: e.target.value})}
+                      className={`status-select ${editForm.status.toLowerCase()}`}
+                    >
+                      <option value="Available">Available</option>
+                      <option value="Booked">Booked</option>
+                      <option value="Registered">Registered</option>
+                    </select>
+                  </div>
+                  <div className="edit-actions">
+                    <button className="btn-save" onClick={() => handleSavePlot(plot.id)} disabled={updating === plot.id}>
+                      {updating === plot.id ? 'Saving...' : 'Save'}
+                    </button>
+                    <button className="btn-cancel" onClick={cancelEdit} disabled={updating === plot.id}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div className="plot-info-extended">
+                    <div className="plot-info-header">
+                      <h3>{plot.name}</h3>
+                      <span className={`status-badge ${plot.status.toLowerCase()}`}>{plot.status}</span>
+                    </div>
+                    <div className="plot-details-grid">
+                      <div className="detail-item">
+                        <span className="detail-label">Type</span>
+                        <span className="detail-value">{plot.type || '-'}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Size</span>
+                        <span className="detail-value">{plot.size || '-'}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Area</span>
+                        <span className="detail-value">{plot.area ? `${plot.area} sqft` : '-'}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="plot-actions-row">
+                    <button onClick={() => startEdit(plot)} className="btn-edit" disabled={updating === plot.id}>Edit Plot</button>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>
