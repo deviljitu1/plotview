@@ -20,6 +20,7 @@ const ProjectViewer = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('All');
   const [filterStatus, setFilterStatus] = useState('All');
+  const [filterPhase, setFilterPhase] = useState('All');
   const [selectedPlot, setSelectedPlot] = useState(null);
 
   useEffect(() => {
@@ -76,6 +77,7 @@ const ProjectViewer = () => {
   };
 
   const plotTypes = ['All', ...new Set(plots.map(p => p.type).filter(Boolean))];
+  const phases = ['All', ...new Set(plots.map(p => p.phase || 'Phase 1'))];
 
   if (loading) {
     return (
@@ -140,7 +142,10 @@ const ProjectViewer = () => {
         setFilterType={setFilterType}
         filterStatus={filterStatus}
         setFilterStatus={setFilterStatus}
+        filterPhase={filterPhase}
+        setFilterPhase={setFilterPhase}
         plotTypes={plotTypes}
+        phases={phases}
         plots={plots}
         setSelectedPlot={setSelectedPlot}
       />
@@ -151,6 +156,7 @@ const ProjectViewer = () => {
         searchQuery={searchQuery}
         filterType={filterType}
         filterStatus={filterStatus}
+        filterPhase={filterPhase}
         northOffset={project?.northOffset || 0}
         projectFacing={project?.projectFacing || 'North'}
         selectedPlot={selectedPlot}

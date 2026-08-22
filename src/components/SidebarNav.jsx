@@ -17,7 +17,10 @@ const SidebarNav = ({
   setFilterType,
   filterStatus,
   setFilterStatus,
+  filterPhase,
+  setFilterPhase,
   plotTypes,
+  phases,
   plots,
   setSelectedPlot
 }) => {
@@ -187,6 +190,7 @@ const SidebarNav = ({
                     <div className="search-dropdown">
                       {plots
                         ?.filter(p => {
+                           if (filterPhase !== 'All' && (p.phase || 'Phase 1') !== filterPhase) return false;
                            const qLower = searchQuery.toLowerCase();
                            const nameLower = (p.name || '').toLowerCase();
                            const pNum = nameLower.replace(/\D/g, '');
@@ -209,6 +213,7 @@ const SidebarNav = ({
                           </div>
                         ))}
                       {plots?.filter(p => {
+                           if (filterPhase !== 'All' && (p.phase || 'Phase 1') !== filterPhase) return false;
                            const qLower = searchQuery.toLowerCase();
                            const nameLower = (p.name || '').toLowerCase();
                            const pNum = nameLower.replace(/\D/g, '');
@@ -227,12 +232,24 @@ const SidebarNav = ({
             <div className="sidebar-expandable">
               <button className={`sidebar-action-item ${expandedSection === 'filter' ? 'active' : ''}`} onClick={() => toggleSection('filter')} title="Filter Map">
                 <Filter size={20} />
-                {(filterType !== 'All' || filterStatus !== 'All') && (
+                {(filterType !== 'All' || filterStatus !== 'All' || filterPhase !== 'All') && (
                   <span className="filter-badge" />
                 )}
               </button>
               <div className={`popout-content ${expandedSection === 'filter' ? 'expanded' : ''}`}>
                 <div className="popout-filter-inputs">
+                  {phases?.length > 2 && (
+                    <select 
+                      value={filterPhase} 
+                      onChange={(e) => setFilterPhase(e.target.value)}
+                      className="popout-select"
+                    >
+                      {phases.map(phase => (
+                        <option key={phase} value={phase}>{phase === 'All' ? 'All Phases' : phase}</option>
+                      ))}
+                    </select>
+                  )}
+
                   <select 
                     value={filterType} 
                     onChange={(e) => setFilterType(e.target.value)}
@@ -254,12 +271,13 @@ const SidebarNav = ({
                     <option value="Registered">Registered</option>
                   </select>
 
-                  {(filterType !== 'All' || filterStatus !== 'All' || searchQuery !== '') && (
+                  {(filterType !== 'All' || filterStatus !== 'All' || filterPhase !== 'All' || searchQuery !== '') && (
                     <button 
                       className="btn-clear-filter"
                       onClick={() => {
                         setFilterType('All');
                         setFilterStatus('All');
+                        setFilterPhase('All');
                         setSearchQuery('');
                       }}
                     >

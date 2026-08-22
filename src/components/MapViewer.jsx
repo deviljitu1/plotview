@@ -8,7 +8,7 @@ import eastIcon from '../assets/east-symbol-icon.svg';
 import westIcon from '../assets/west-symbol-icon.svg';
 import './MapViewer.css';
 
-const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterStatus, northOffset = 0, projectFacing = 'North', selectedPlot, setSelectedPlot }) => {
+const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterStatus, filterPhase = 'All', northOffset = 0, projectFacing = 'North', selectedPlot, setSelectedPlot }) => {
   const [containerSize, setContainerSize] = useState(null);
   const [rotation, setRotation] = useState(0);
   const [isFingerRotating, setIsFingerRotating] = useState(false);
@@ -35,6 +35,7 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
   const plotTypes = ['All', ...new Set((plotsData || []).map(p => p.type).filter(Boolean))];
 
   const isPlotVisible = (plot) => {
+    if (filterPhase !== 'All' && (plot.phase || 'Phase 1') !== filterPhase) return false;
     if (filterType !== 'All' && plot.type !== filterType) return false;
     if (filterStatus !== 'All' && plot.status !== filterStatus) return false;
     if (searchQuery) {

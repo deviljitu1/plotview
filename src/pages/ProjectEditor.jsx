@@ -60,6 +60,9 @@ const ProjectEditor = () => {
 
   // Plots
   const [plots, setPlots] = useState([]);
+  const [phases, setPhases] = useState(['Phase 1']);
+  const [activePhase, setActivePhase] = useState('Phase 1');
+  const [alignPhaseFilter, setAlignPhaseFilter] = useState('All');
   const [editingPlot, setEditingPlot] = useState(null); // index or null
   const [plotForm, setPlotForm] = useState({
     name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: ''
@@ -133,7 +136,22 @@ const ProjectEditor = () => {
         
         // Load plots subcollection
         const plotsSnap = await getDocs(collection(db, 'projects', id, 'plots'));
-        const plotsList = plotsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const plotsList = plotsSnap.docs.map(d => {
+          const pData = d.data();
+          return { id: d.id, ...pData, phase: pData.phase || 'Phase 1' };
+        });
+        
+        if (data.phases && data.phases.length > 0) {
+          setPhases(data.phases);
+          setActivePhase(data.phases[0]);
+        } else {
+          const loadedPhases = Array.from(new Set(plotsList.map(p => p.phase))).filter(Boolean);
+          if (loadedPhases.length > 0) {
+            setPhases(loadedPhases);
+            setActivePhase(loadedPhases[0]);
+          }
+        }
+        
         setPlots(sortPlots(plotsList));
       }
     } catch (err) {
@@ -152,22 +170,24 @@ const ProjectEditor = () => {
 
   // ==================== STATS ====================
   const stats = useMemo(() => {
-    const total = plots.length;
-    const available = plots.filter(p => p.status === 'Available').length;
-    const booked = plots.filter(p => p.status === 'Booked').length;
-    const registered = plots.filter(p => p.status === 'Registered').length;
+    const phasePlots = plots.filter(p => (p.phase || 'Phase 1') === activePhase);
+    const total = phasePlots.length;
+    const available = phasePlots.filter(p => p.status === 'Available').length;
+    const booked = phasePlots.filter(p => p.status === 'Booked').length;
+    const registered = phasePlots.filter(p => p.status === 'Registered').length;
     return { total, available, booked, registered };
-  }, [plots]);
+  }, [plots, activePhase]);
 
   // ==================== FILTERED PLOTS ====================
   const filteredPlots = useMemo(() => {
     return plots.filter(p => {
+      const matchPhase = (p.phase || 'Phase 1') === activePhase;
       const matchSearch = !searchTerm || p.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchStatus = filterStatus === 'All' || p.status === filterStatus;
       const matchType = filterType === 'All' || p.type === filterType;
-      return matchSearch && matchStatus && matchType;
+      return matchPhase && matchSearch && matchStatus && matchType;
     });
-  }, [plots, searchTerm, filterStatus, filterType]);
+  }, [plots, searchTerm, filterStatus, filterType, activePhase]);
 
   // ==================== EXCEL IMPORT ====================
   const handleExcelImport = (e) => {
@@ -192,6 +212,7 @@ const ProjectEditor = () => {
             else if (k === 'type' || k.includes('category')) normalized.type = String(row[key]).trim() || 'Plot';
             else if (k === 'status') normalized.status = String(row[key]).trim() || 'Available';
             else if (k.includes('facing') || k.includes('direction')) normalized.facing = String(row[key]).trim() || 'East';
+            else if (k === 'phase') normalized.phase = String(row[key]).trim();
           });
 
           // Validate
@@ -210,6 +231,7 @@ const ProjectEditor = () => {
           return {
             id: uuidv4(),
             name: normalized.name || `Plot ${idx + 1}`,
+            phase: normalized.phase || activePhase,
             area: normalized.area || 0,
             size: normalized.size || '',
             type: normalized.type || 'Plot',
@@ -232,6 +254,13 @@ const ProjectEditor = () => {
 
   const confirmImport = () => {
     if (!importPreview) return;
+    
+    const newPhases = new Set(phases);
+    importPreview.forEach(p => {
+      if (p.phase) newPhases.add(p.phase);
+    });
+    setPhases(Array.from(newPhases));
+
     setPlots(prev => sortPlots([...prev, ...importPreview]));
     setImportPreview(null);
     setImportErrors([]);
@@ -247,6 +276,7 @@ const ProjectEditor = () => {
     if (plots.length === 0) return alert('No plots to export.');
     const data = plots.map(p => ({
       'Plot Name': p.name,
+      'Phase': p.phase || 'Phase 1',
       'Area (sq ft)': p.area,
       'Size': p.size,
       'Type': p.type,
@@ -261,8 +291,8 @@ const ProjectEditor = () => {
 
   const downloadTemplate = () => {
     const template = [
-      { 'Plot Name': 'Plot 1', 'Area (sq ft)': 1200, 'Size': "40' x 30'", 'Type': 'Plot', 'Status': 'Available', 'Facing': 'East' },
-      { 'Plot Name': 'Plot 2', 'Area (sq ft)': 1500, 'Size': "50' x 30'", 'Type': 'LIG', 'Status': 'Booked', 'Facing': 'North' },
+      { 'Plot Name': 'Plot 1', 'Phase': 'Phase 1', 'Area (sq ft)': 1200, 'Size': "40' x 30'", 'Type': 'Plot', 'Status': 'Available', 'Facing': 'East' },
+      { 'Plot Name': 'Plot 2', 'Phase': 'Phase 1', 'Area (sq ft)': 1500, 'Size': "50' x 30'", 'Type': 'LIG', 'Status': 'Booked', 'Facing': 'North' },
     ];
     const ws = XLSX.utils.json_to_sheet(template);
     const wb = XLSX.utils.book_new();
@@ -479,6 +509,7 @@ const ProjectEditor = () => {
     const newPlot = {
       id: uuidv4(),
       ...plotForm,
+      phase: activePhase,
       area: Number(plotForm.area) || 0,
       points: '100,100 200,100 200,200 100,200' // Default rectangle
     };
@@ -619,6 +650,7 @@ const ProjectEditor = () => {
         projectFacing,
         mapImageUrl: imageUrl,
         customBrochureUrl: brochureUrl,
+        phases: phases,
         imgDimensions,
         plotCount: plots.length,
         googleMapsUrl,
@@ -650,6 +682,7 @@ const ProjectEditor = () => {
         const plotRef = doc(db, 'projects', projectId, 'plots', plot.id);
         batch.set(plotRef, {
           name: plot.name,
+          phase: plot.phase || 'Phase 1',
           area: plot.area,
           type: plot.type,
           status: plot.status,
@@ -1016,6 +1049,31 @@ const ProjectEditor = () => {
         {/* ======================== TAB: PLOTS ======================== */}
         {activeTab === 'plots' && (
           <div className="tab-content">
+          
+            {/* ===== PHASE TABS ===== */}
+            <div className="phase-tabs" style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+              {phases.map(p => (
+                <button 
+                  key={p} 
+                  className={`btn-sm ${activePhase === p ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setActivePhase(p)}
+                >
+                  {p}
+                </button>
+              ))}
+              <button 
+                className="btn-sm btn-secondary" 
+                onClick={() => {
+                  const name = prompt('Enter new phase name (e.g. Phase 2):');
+                  if (name && !phases.includes(name)) {
+                    setPhases(prev => [...prev, name]);
+                    setActivePhase(name);
+                  }
+                }}
+              >
+                + Add Phase
+              </button>
+            </div>
 
             {/* ===== STATS CARDS ===== */}
             <div className="stats-row">
@@ -1075,13 +1133,14 @@ const ProjectEditor = () => {
                   <table className="plots-table">
                     <thead>
                       <tr>
-                        <th>Name</th><th>Area</th><th>Size</th><th>Type</th><th>Status</th><th>Facing</th>
+                        <th>Name</th><th>Phase</th><th>Area</th><th>Size</th><th>Type</th><th>Status</th><th>Facing</th>
                       </tr>
                     </thead>
                     <tbody>
                       {importPreview.map((p, i) => (
                         <tr key={i} className={!p.name ? 'row-error' : ''}>
                           <td>{p.name}</td>
+                          <td>{p.phase}</td>
                           <td>{p.area}</td>
                           <td>{p.size}</td>
                           <td>{p.type}</td>
@@ -1293,7 +1352,20 @@ const ProjectEditor = () => {
               <>
                 <div className="align-instructions">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <p>🎯 <strong>Drag the red corner dots</strong> to align each plot boundary over the map image. Click a plot label to highlight it.</p>
+                    <div style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: '0.5rem' }}>
+                      <p style={{ margin: 0 }}>🎯 <strong>Drag the red corner dots</strong> to align each plot boundary over the map image. Click a plot label to highlight it.</p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>View Phase:</span>
+                        <select 
+                          value={alignPhaseFilter} 
+                          onChange={e => setAlignPhaseFilter(e.target.value)}
+                          style={{ padding: '4px 8px', borderRadius: '4px', border: '1px solid #cbd5e1' }}
+                        >
+                          <option value="All">All Phases</option>
+                          {phases.map(p => <option key={p} value={p}>{p}</option>)}
+                        </select>
+                      </div>
+                    </div>
                     <div className="visual-compass-calibrator" style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
                       <div style={{ textAlign: 'center' }}>
                         <label style={{ fontSize: '11px', display: 'block', marginBottom: '4px' }}>North Offset (°)</label>
@@ -1343,7 +1415,7 @@ const ProjectEditor = () => {
                       style={{ pointerEvents: 'none', userSelect: 'none' }}
                     />
 
-                    {plots.map((plot) => {
+                    {plots.filter(p => alignPhaseFilter === 'All' || (p.phase || 'Phase 1') === alignPhaseFilter).map((plot) => {
                       const pointsArr = plot.points.trim().split(' ').map(p => p.split(',').map(Number));
                       const isHighlighted = selectedAlignPlot === plot.id;
 
