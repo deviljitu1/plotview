@@ -498,6 +498,23 @@ const ProjectEditor = () => {
     setPlots(prev => prev.filter((_, i) => i !== index));
   };
 
+  const duplicatePlot = (index) => {
+    const p = plots[index];
+    // Offset the copied plot slightly so it doesn't overlap exactly
+    const newPoints = p.points.split(' ').map(pt => {
+      const [x, y] = pt.split(',').map(Number);
+      return `${x + 20},${y + 20}`;
+    }).join(' ');
+
+    const newPlot = {
+      ...p,
+      id: uuidv4(),
+      points: newPoints
+    };
+    
+    setPlots(prev => sortPlots([...prev, newPlot]));
+  };
+
   const startEditPlot = (index) => {
     const p = plots[index];
     setPlotForm({ name: p.name, area: p.area, type: p.type, status: p.status, facing: p.facing, size: p.size });
@@ -1247,6 +1264,7 @@ const ProjectEditor = () => {
                             <td>{plot.facing}</td>
                             <td>
                               <button className="table-btn edit" onClick={() => startEditPlot(realIdx)}>Edit</button>
+                              <button className="table-btn duplicate" onClick={() => duplicatePlot(realIdx)} style={{ marginLeft: '4px', marginRight: '4px' }}>Duplicate</button>
                               <button className="table-btn delete" onClick={() => deletePlot(realIdx)}>Delete</button>
                             </td>
                           </tr>
