@@ -13,8 +13,8 @@ const ClientManager = () => {
   const [editingPlotId, setEditingPlotId] = useState(null);
   const [editForm, setEditForm] = useState({ name: '', type: '', size: '', area: '', status: 'Available' });
 
-  const [usernameInput, setUsernameInput] = useState('');
   const [passwordInput, setPasswordInput] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -50,17 +50,17 @@ const ClientManager = () => {
     e.preventDefault();
     if (!project) return;
     
-    if (!project.clientUsername || !project.clientPassword) {
+    if (!project.clientPassword) {
       setError('Client login is not fully configured for this project. Please contact the administrator.');
       return;
     }
 
-    if (usernameInput === project.clientUsername && passwordInput === project.clientPassword) {
+    if (passwordInput === project.clientPassword) {
       setIsAuthenticated(true);
       setError('');
       await loadPlots(projectId);
     } else {
-      setError('Incorrect login ID or password');
+      setError('Incorrect password');
     }
   };
 
@@ -153,20 +153,28 @@ const ClientManager = () => {
           <p>Client Management Portal</p>
           
           <form onSubmit={handleLogin} className="client-login-form">
-            <input 
-              type="text" 
-              placeholder="Enter Login ID" 
-              value={usernameInput}
-              onChange={(e) => setUsernameInput(e.target.value)}
-              required
-            />
-            <input 
-              type="password" 
-              placeholder="Enter Access Password" 
-              value={passwordInput}
-              onChange={(e) => setPasswordInput(e.target.value)}
-              required
-            />
+            <div className="client-password-wrapper">
+              <input 
+                type={showPassword ? "text" : "password"} 
+                placeholder="Enter Access Password" 
+                value={passwordInput}
+                onChange={(e) => setPasswordInput(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="client-password-toggle"
+                onClick={() => setShowPassword(!showPassword)}
+                tabIndex={-1}
+                aria-label="Toggle password visibility"
+              >
+                {showPassword ? (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                ) : (
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                )}
+              </button>
+            </div>
             {error && <div className="error-text">{error}</div>}
             <button type="submit" style={{ background: project?.brandColor || '#6366f1' }}>
               Access Dashboard

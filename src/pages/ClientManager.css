@@ -60,6 +60,12 @@
   gap: 1rem;
 }
 
+.client-password-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
 .client-login-form input {
   padding: 0.8rem 1rem;
   border: 1px solid #cbd5e1;
@@ -69,10 +75,29 @@
   transition: border-color 0.2s;
   text-align: center;
   font-family: 'Inter', sans-serif;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .client-login-form input:focus {
   border-color: #6366f1;
+}
+
+.client-password-toggle {
+  position: absolute;
+  right: 12px;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.client-password-toggle:hover {
+  opacity: 0.8 !important;
 }
 
 .client-login-form button {

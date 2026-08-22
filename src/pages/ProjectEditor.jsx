@@ -33,7 +33,6 @@ const ProjectEditor = () => {
   const [description, setDescription] = useState('');
   const [contactPhone, setContactPhone] = useState('');
   const [whatsappNumber, setWhatsappNumber] = useState('');
-  const [clientUsername, setClientUsername] = useState('');
   const [clientPassword, setClientPassword] = useState('');
   const [northOffset, setNorthOffset] = useState(0);
   const [projectFacing, setProjectFacing] = useState('North');
@@ -115,7 +114,6 @@ const ProjectEditor = () => {
         setDescription(data.description || '');
         setContactPhone(data.contactPhone || '');
         setWhatsappNumber(data.whatsappNumber || '');
-        setClientUsername(data.clientUsername || '');
         setClientPassword(data.clientPassword || '');
         setNorthOffset(data.northOffset || 0);
         setProjectFacing(data.projectFacing || 'North');
@@ -644,7 +642,6 @@ const ProjectEditor = () => {
         description,
         contactPhone,
         whatsappNumber,
-        clientUsername,
         clientPassword,
         northOffset: Number(northOffset),
         projectFacing,
@@ -914,30 +911,26 @@ const ProjectEditor = () => {
               <h3>Client Management Portal</h3>
               <div className="form-grid">
                 <div className="form-group">
-                  <label>Client Login ID (Username)</label>
-                  <input type="text" value={clientUsername} onChange={e => setClientUsername(e.target.value)} placeholder="e.g. client_abc" />
-                </div>
-                <div className="form-group">
                   <label>Client Password</label>
                   <input type="text" value={clientPassword} onChange={e => setClientPassword(e.target.value)} placeholder="e.g. sell2026" />
                 </div>
                 <div className="form-group full-width" style={{ display: 'flex', alignItems: 'flex-end', marginTop: '-0.5rem' }}>
-                  {slug && clientUsername && clientPassword ? (
+                  {slug && clientPassword ? (
                     <button 
                       type="button" 
                       className="btn-secondary" 
                       style={{ width: '100%' }}
                       onClick={() => {
                         const url = `${window.location.origin}/manage/${slug}`;
-                        navigator.clipboard.writeText(`Manage your plots here:\nURL: ${url}\nLogin ID: ${clientUsername}\nPassword: ${clientPassword}`);
-                        alert('Client management link and credentials copied to clipboard!');
+                        navigator.clipboard.writeText(`Manage your plots here:\nURL: ${url}\nPassword: ${clientPassword}`);
+                        alert('Client management link and password copied to clipboard!');
                       }}
                     >
                       📋 Copy Client Login Details
                     </button>
                   ) : (
                     <span className="form-hint" style={{ marginTop: 'auto', marginBottom: '1rem' }}>
-                      Save project with a slug, username, and password to generate link.
+                      Save project with a slug and password to generate link.
                     </span>
                   )}
                 </div>
