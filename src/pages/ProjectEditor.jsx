@@ -1295,6 +1295,7 @@ const ProjectEditor = () => {
                           />
                         </th>
                         <th>Name</th>
+                        <th>Phase</th>
                         <th>Area</th>
                         <th>Size</th>
                         <th>Type</th>
@@ -1316,6 +1317,7 @@ const ProjectEditor = () => {
                               />
                             </td>
                             <td>{plot.name}</td>
+                            <td>{plot.phase || 'Phase 1'}</td>
                             <td>{plot.area} sq ft</td>
                             <td>{plot.size}</td>
                             <td><span className={`type-badge ${plot.type.toLowerCase()}`}>{plot.type}</span></td>
