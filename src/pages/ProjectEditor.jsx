@@ -13,6 +13,10 @@ import eastIcon from '../assets/east-symbol-icon.svg';
 import westIcon from '../assets/west-symbol-icon.svg';
 import './ProjectEditor.css';
 
+const sortPlots = (plotsArr) => {
+  return [...plotsArr].sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' }));
+};
+
 const TABS = ['details', 'plots', 'align'];
 
 const ProjectEditor = () => {
@@ -130,7 +134,7 @@ const ProjectEditor = () => {
         // Load plots subcollection
         const plotsSnap = await getDocs(collection(db, 'projects', id, 'plots'));
         const plotsList = plotsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-        setPlots(plotsList);
+        setPlots(sortPlots(plotsList));
       }
     } catch (err) {
       console.error('Error loading project:', err);
@@ -228,7 +232,7 @@ const ProjectEditor = () => {
 
   const confirmImport = () => {
     if (!importPreview) return;
-    setPlots(prev => [...prev, ...importPreview]);
+    setPlots(prev => sortPlots([...prev, ...importPreview]));
     setImportPreview(null);
     setImportErrors([]);
   };
@@ -478,13 +482,13 @@ const ProjectEditor = () => {
       area: Number(plotForm.area) || 0,
       points: '100,100 200,100 200,200 100,200' // Default rectangle
     };
-    setPlots(prev => [...prev, newPlot]);
+    setPlots(prev => sortPlots([...prev, newPlot]));
     setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '' });
   };
 
   const updatePlot = () => {
     if (editingPlot === null) return;
-    setPlots(prev => prev.map((p, i) => i === editingPlot ? { ...p, ...plotForm, area: Number(plotForm.area) || 0 } : p));
+    setPlots(prev => sortPlots(prev.map((p, i) => i === editingPlot ? { ...p, ...plotForm, area: Number(plotForm.area) || 0 } : p)));
     setEditingPlot(null);
     setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '' });
   };

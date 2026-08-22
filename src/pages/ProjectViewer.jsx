@@ -65,6 +65,7 @@ const ProjectViewer = () => {
       // Load plots
       const plotsSnap = await getDocs(collection(db, 'projects', projectDoc.id, 'plots'));
       const plotsList = plotsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+      plotsList.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' }));
       setPlots(plotsList);
     } catch (err) {
       console.error('Error loading project:', err);
