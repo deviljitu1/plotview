@@ -62,7 +62,7 @@ const ProjectEditor = () => {
   const [phases, setPhases] = useState(['Phase 1']);
   const [activePhase, setActivePhase] = useState('Phase 1');
   const [alignPhaseFilter, setAlignPhaseFilter] = useState('All');
-  const [selectedAlignPlots, setSelectedAlignPlots] = useState(new Set()); // index or null
+  const [editingPlot, setEditingPlot] = useState(null); // index or null
   const [plotForm, setPlotForm] = useState({
     name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: 'Phase 1'
   });
@@ -85,7 +85,7 @@ const ProjectEditor = () => {
   // Align Mode
   const [activeTab, setActiveTab] = useState('details');
   const [dragState, setDragState] = useState(null);
-  const [selectedAlignPlot, setSelectedAlignPlot] = useState(null);
+  const [selectedAlignPlots, setSelectedAlignPlots] = useState(new Set());
   const svgRef = useRef(null);
   const imgRef = useRef(null);
   const formRef = useRef(null);
