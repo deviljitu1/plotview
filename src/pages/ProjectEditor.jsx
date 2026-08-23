@@ -64,7 +64,7 @@ const ProjectEditor = () => {
   const [alignPhaseFilter, setAlignPhaseFilter] = useState('All');
   const [editingPlot, setEditingPlot] = useState(null); // index or null
   const [plotForm, setPlotForm] = useState({
-    name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: ''
+    name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: 'Phase 1'
   });
   const [saveStatus, setSaveStatus] = useState('');
 
@@ -507,19 +507,19 @@ const ProjectEditor = () => {
     const newPlot = {
       id: uuidv4(),
       ...plotForm,
-      phase: activePhase,
+      phase: plotForm.phase || activePhase,
       area: Number(plotForm.area) || 0,
       points: '100,100 200,100 200,200 100,200' // Default rectangle
     };
     setPlots(prev => sortPlots([...prev, newPlot]));
-    setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '' });
+    setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: activePhase });
   };
 
   const updatePlot = () => {
     if (editingPlot === null) return;
     setPlots(prev => sortPlots(prev.map((p, i) => i === editingPlot ? { ...p, ...plotForm, area: Number(plotForm.area) || 0 } : p)));
     setEditingPlot(null);
-    setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '' });
+    setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: activePhase });
   };
 
   const deletePlot = (index) => {
@@ -546,7 +546,7 @@ const ProjectEditor = () => {
 
   const startEditPlot = (index) => {
     const p = plots[index];
-    setPlotForm({ name: p.name, area: p.area, type: p.type, status: p.status, facing: p.facing, size: p.size });
+    setPlotForm({ name: p.name, area: p.area, type: p.type, status: p.status, facing: p.facing, size: p.size, phase: p.phase || activePhase });
     setEditingPlot(index);
   };
 
@@ -1174,6 +1174,12 @@ const ProjectEditor = () => {
                     <option value="LIG">LIG</option>
                     <option value="EWS">EWS</option>
                     <option value="Commercial">Commercial</option>
+                  </select>
+                </div>
+                <div className="form-group">
+                  <label>Phase</label>
+                  <select value={plotForm.phase} onChange={e => setPlotForm(p => ({...p, phase: e.target.value}))}>
+                    {phases.map(ph => <option key={ph} value={ph}>{ph}</option>)}
                   </select>
                 </div>
                 <div className="form-group">

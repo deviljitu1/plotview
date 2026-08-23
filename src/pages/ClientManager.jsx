@@ -271,17 +271,6 @@ const ClientManager = () => {
                     />
                   </div>
                   <div className="edit-form-group">
-                    <label>Phase</label>
-                    <select 
-                      value={editForm.phase} 
-                      onChange={e => setEditForm({...editForm, phase: e.target.value})}
-                    >
-                      {availablePhases.map(p => (
-                        <option key={p} value={p}>{p}</option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="edit-form-group">
                     <label>Status</label>
                     <select 
                       value={editForm.status} 
