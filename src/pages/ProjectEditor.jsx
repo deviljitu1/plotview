@@ -88,6 +88,7 @@ const ProjectEditor = () => {
   const [selectedAlignPlot, setSelectedAlignPlot] = useState(null);
   const svgRef = useRef(null);
   const imgRef = useRef(null);
+  const formRef = useRef(null);
   const [imgDimensions, setImgDimensions] = useState({ width: 1000, height: 750 });
 
   // General
@@ -548,6 +549,9 @@ const ProjectEditor = () => {
     const p = plots[index];
     setPlotForm({ name: p.name, area: p.area, type: p.type, status: p.status, facing: p.facing, size: p.size, phase: p.phase || activePhase });
     setEditingPlot(index);
+    if (formRef.current) {
+      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   };
 
   // --- Align Mode Logic ---
@@ -1156,7 +1160,7 @@ const ProjectEditor = () => {
             )}
 
             {/* ===== ADD / EDIT PLOT FORM ===== */}
-            <div className="form-section">
+            <div className="form-section" ref={formRef}>
               <h3>{editingPlot !== null ? 'Edit Plot' : 'Add New Plot'}</h3>
               <div className="form-grid">
                 <div className="form-group">
