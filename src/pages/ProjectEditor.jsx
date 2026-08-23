@@ -62,7 +62,7 @@ const ProjectEditor = () => {
   const [phases, setPhases] = useState(['Phase 1']);
   const [activePhase, setActivePhase] = useState('Phase 1');
   const [alignPhaseFilter, setAlignPhaseFilter] = useState('All');
-  const [editingPlot, setEditingPlot] = useState(null); // index or null
+  const [selectedAlignPlots, setSelectedAlignPlots] = useState(new Set()); // index or null
   const [plotForm, setPlotForm] = useState({
     name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: 'Phase 1'
   });
@@ -1403,7 +1403,7 @@ const ProjectEditor = () => {
                 <div className="align-instructions">
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', flex: 1, flexDirection: 'column', gap: '0.5rem' }}>
-                      <p style={{ margin: 0 }}>🎯 <strong>Drag the red corner dots</strong> to align each plot boundary over the map image. Click a plot label to highlight it.</p>
+                      <p style={{ margin: 0 }}>🎯 <strong>Drag the red corner dots</strong> to align each plot boundary over the map image. Click a plot to select it (Hold <strong>Shift</strong> to select multiple).</p>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                         <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>View Phase:</span>
                         <select 
@@ -1446,46 +1446,150 @@ const ProjectEditor = () => {
                     </div>
                   </div>
                 </div>
-                <div className="align-canvas-wrapper" style={{ position: 'relative' }}>
-                  {selectedAlignPlot && (() => {
-                    const sp = plots.find(p => p.id === selectedAlignPlot);
-                    if (!sp) return null;
+                <div className="align-canvas-wrapper" style={{ position: 'relative', overflow: 'hidden' }}>
+                  {selectedAlignPlots.size > 0 && (() => {
+                    const getBulkValue = (field) => {
+                      const arr = Array.from(selectedAlignPlots);
+                      const firstVal = plots.find(p => p.id === arr[0])?.[field];
+                      for (let i = 1; i < arr.length; i++) {
+                        const val = plots.find(p => p.id === arr[i])?.[field];
+                        if (val !== firstVal) return ''; // Mixed values
+                      }
+                      return firstVal || '';
+                    };
+
+                    const updateSelectedPlots = (field, value) => {
+                      setPlots(prev => prev.map(p => {
+                        if (selectedAlignPlots.has(p.id)) {
+                          return { ...p, [field]: value };
+                        }
+                        return p;
+                      }));
+                    };
+
                     return (
                       <div style={{
                         position: 'absolute',
-                        top: '20px',
-                        left: '20px',
+                        top: 0,
+                        left: 0,
+                        bottom: 0,
+                        width: '300px',
                         background: 'white',
-                        padding: '12px 24px',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '16px',
+                        padding: '20px',
+                        boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
                         zIndex: 10,
-                        border: '1px solid #e2e8f0'
+                        overflowY: 'auto',
+                        borderRight: '1px solid #e2e8f0',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '12px'
                       }}>
-                        <div style={{ fontWeight: 'bold', color: '#1e293b' }}>Plot: {sp.name}</div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <label style={{ fontSize: '14px', color: '#64748b', fontWeight: '500' }}>Phase:</label>
-                          <select 
-                            value={sp.phase || 'Phase 1'} 
-                            onChange={(e) => {
-                              const newPhase = e.target.value;
-                              setPlots(prev => prev.map(p => p.id === sp.id ? { ...p, phase: newPhase } : p));
-                            }}
-                            style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#1e293b' }}>
+                            {selectedAlignPlots.size === 1 ? 'Edit Plot' : `Edit ${selectedAlignPlots.size} Plots`}
+                          </h3>
+                          <button 
+                            onClick={() => setSelectedAlignPlots(new Set())}
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '1.2rem', padding: '0 4px' }}
+                            title="Close"
                           >
-                            {phases.map(p => <option key={p} value={p}>{p}</option>)}
-                          </select>
+                            ✕
+                          </button>
                         </div>
-                        <button 
-                          onClick={() => setSelectedAlignPlot(null)}
-                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '4px' }}
-                          title="Close"
-                        >
-                          ✕
-                        </button>
+                        
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                          {selectedAlignPlots.size === 1 && (
+                            <div className="form-group" style={{ marginBottom: 0 }}>
+                              <label style={{ fontSize: '13px', marginBottom: '4px' }}>Name</label>
+                              <input 
+                                value={getBulkValue('name')} 
+                                onChange={(e) => updateSelectedPlots('name', e.target.value)} 
+                                style={{ padding: '6px', fontSize: '13px' }}
+                              />
+                            </div>
+                          )}
+
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label style={{ fontSize: '13px', marginBottom: '4px' }}>Phase</label>
+                            <select 
+                              value={getBulkValue('phase')} 
+                              onChange={(e) => updateSelectedPlots('phase', e.target.value)}
+                              style={{ padding: '6px', fontSize: '13px' }}
+                            >
+                              {selectedAlignPlots.size > 1 && getBulkValue('phase') === '' && <option value="" disabled>--- Mixed ---</option>}
+                              {phases.map(p => <option key={p} value={p}>{p}</option>)}
+                            </select>
+                          </div>
+
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label style={{ fontSize: '13px', marginBottom: '4px' }}>Area (sq ft)</label>
+                            <input 
+                              type="number" 
+                              value={getBulkValue('area')}
+                              onChange={(e) => updateSelectedPlots('area', e.target.value)} 
+                              placeholder={selectedAlignPlots.size > 1 ? '--- Mixed ---' : ''}
+                              style={{ padding: '6px', fontSize: '13px' }}
+                            />
+                          </div>
+
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label style={{ fontSize: '13px', marginBottom: '4px' }}>Size</label>
+                            <input 
+                              value={getBulkValue('size')}
+                              onChange={(e) => updateSelectedPlots('size', e.target.value)} 
+                              placeholder={selectedAlignPlots.size > 1 ? '--- Mixed ---' : ''}
+                              style={{ padding: '6px', fontSize: '13px' }}
+                            />
+                          </div>
+
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label style={{ fontSize: '13px', marginBottom: '4px' }}>Type</label>
+                            <select 
+                              value={getBulkValue('type')} 
+                              onChange={(e) => updateSelectedPlots('type', e.target.value)}
+                              style={{ padding: '6px', fontSize: '13px' }}
+                            >
+                              {selectedAlignPlots.size > 1 && getBulkValue('type') === '' && <option value="" disabled>--- Mixed ---</option>}
+                              <option value="Plot">Plot</option>
+                              <option value="LIG">LIG</option>
+                              <option value="EWS">EWS</option>
+                              <option value="Commercial">Commercial</option>
+                            </select>
+                          </div>
+
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label style={{ fontSize: '13px', marginBottom: '4px' }}>Status</label>
+                            <select 
+                              value={getBulkValue('status')} 
+                              onChange={(e) => updateSelectedPlots('status', e.target.value)}
+                              style={{ padding: '6px', fontSize: '13px' }}
+                            >
+                              {selectedAlignPlots.size > 1 && getBulkValue('status') === '' && <option value="" disabled>--- Mixed ---</option>}
+                              <option value="Available">Available</option>
+                              <option value="Booked">Booked</option>
+                              <option value="Registered">Registered</option>
+                            </select>
+                          </div>
+
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label style={{ fontSize: '13px', marginBottom: '4px' }}>Facing</label>
+                            <select 
+                              value={getBulkValue('facing')} 
+                              onChange={(e) => updateSelectedPlots('facing', e.target.value)}
+                              style={{ padding: '6px', fontSize: '13px' }}
+                            >
+                              {selectedAlignPlots.size > 1 && getBulkValue('facing') === '' && <option value="" disabled>--- Mixed ---</option>}
+                              <option value="East">East</option>
+                              <option value="West">West</option>
+                              <option value="North">North</option>
+                              <option value="South">South</option>
+                              <option value="North-East">North-East</option>
+                              <option value="North-West">North-West</option>
+                              <option value="South-East">South-East</option>
+                              <option value="South-West">South-West</option>
+                            </select>
+                          </div>
+                        </div>
                       </div>
                     );
                   })()}
@@ -1496,7 +1600,7 @@ const ProjectEditor = () => {
                     style={{ cursor: dragState ? 'grabbing' : 'crosshair' }}
                     onClick={(e) => {
                       if (e.target === svgRef.current || e.target.tagName === 'image') {
-                        setSelectedAlignPlot(null);
+                        setSelectedAlignPlots(new Set());
                       }
                     }}
                   >
@@ -1509,7 +1613,7 @@ const ProjectEditor = () => {
 
                     {plots.filter(p => alignPhaseFilter === 'All' || (p.phase || 'Phase 1') === alignPhaseFilter).map((plot) => {
                       const pointsArr = plot.points.trim().split(' ').map(p => p.split(',').map(Number));
-                      const isHighlighted = selectedAlignPlot === plot.id;
+                      const isHighlighted = selectedAlignPlots.has(plot.id);
 
                       return (
                         <g key={plot.id}>
@@ -1520,7 +1624,15 @@ const ProjectEditor = () => {
                             strokeWidth={isHighlighted ? 3 : 1.5}
                             style={{ pointerEvents: 'all', cursor: 'grab' }}
                             onPointerDown={(e) => {
-                              setSelectedAlignPlot(plot.id);
+                              setSelectedAlignPlots(prev => {
+                                if (e.shiftKey || e.ctrlKey || e.metaKey) {
+                                  const next = new Set(prev);
+                                  if (next.has(plot.id)) next.delete(plot.id);
+                                  else next.add(plot.id);
+                                  return next;
+                                }
+                                return new Set([plot.id]);
+                              });
                               handlePlotPointerDown(e, plot.id, pointsArr);
                             }}
                           />
@@ -1536,7 +1648,14 @@ const ProjectEditor = () => {
                               strokeWidth="2"
                               style={{ cursor: 'grab', pointerEvents: 'all' }}
                               onPointerDown={(e) => {
-                                setSelectedAlignPlot(plot.id);
+                                setSelectedAlignPlots(prev => {
+                                  if (e.shiftKey || e.ctrlKey || e.metaKey) {
+                                    const next = new Set(prev);
+                                    next.add(plot.id);
+                                    return next;
+                                  }
+                                  return new Set([plot.id]);
+                                });
                                 handlePointPointerDown(e, plot.id, idx);
                               }}
                             />
