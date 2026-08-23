@@ -1401,7 +1401,50 @@ const ProjectEditor = () => {
                     </div>
                   </div>
                 </div>
-                <div className="align-canvas-wrapper">
+                <div className="align-canvas-wrapper" style={{ position: 'relative' }}>
+                  {selectedAlignPlot && (() => {
+                    const sp = plots.find(p => p.id === selectedAlignPlot);
+                    if (!sp) return null;
+                    return (
+                      <div style={{
+                        position: 'absolute',
+                        bottom: '20px',
+                        left: '50%',
+                        transform: 'translateX(-50%)',
+                        background: 'white',
+                        padding: '12px 24px',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '16px',
+                        zIndex: 10,
+                        border: '1px solid #e2e8f0'
+                      }}>
+                        <div style={{ fontWeight: 'bold', color: '#1e293b' }}>Plot: {sp.name}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <label style={{ fontSize: '14px', color: '#64748b', fontWeight: '500' }}>Phase:</label>
+                          <select 
+                            value={sp.phase || 'Phase 1'} 
+                            onChange={(e) => {
+                              const newPhase = e.target.value;
+                              setPlots(prev => prev.map(p => p.id === sp.id ? { ...p, phase: newPhase } : p));
+                            }}
+                            style={{ padding: '6px 12px', borderRadius: '4px', border: '1px solid #cbd5e1', fontSize: '14px' }}
+                          >
+                            {phases.map(p => <option key={p} value={p}>{p}</option>)}
+                          </select>
+                        </div>
+                        <button 
+                          onClick={() => setSelectedAlignPlot(null)}
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#94a3b8', padding: '4px' }}
+                          title="Close"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    );
+                  })()}
                   <svg
                     ref={svgRef}
                     viewBox={`0 0 ${imgDimensions.width} ${imgDimensions.height}`}
