@@ -87,33 +87,45 @@ const BrochureTemplate = ({ project, plots }) => {
            </div>
         </div>
 
-        {availablePlots.length > 0 && (
-          <div style={{ marginBottom: '30px' }}>
-            <h4 style={{ fontSize: '18px', color: '#333', marginBottom: '15px' }}>Currently Available</h4>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
-              <thead>
-                <tr style={{ backgroundColor: '#f3f4f6', color: '#374151', textAlign: 'left' }}>
-                  <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Plot No.</th>
-                  <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Type</th>
-                  <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Facing</th>
-                  <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Area (sq ft)</th>
-                  <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Size</th>
-                </tr>
-              </thead>
-              <tbody>
-                {availablePlots.map((plot, i) => (
-                  <tr key={i} style={{ borderBottom: '1px solid #e5e7eb' }}>
-                    <td style={{ padding: '12px', fontWeight: '500' }}>{plot.name}</td>
-                    <td style={{ padding: '12px' }}>{plot.type}</td>
-                    <td style={{ padding: '12px' }}>{plot.facing}</td>
-                    <td style={{ padding: '12px' }}>{plot.area}</td>
-                    <td style={{ padding: '12px' }}>{plot.size}</td>
+        {(() => {
+          if (availablePlots.length === 0) return null;
+          
+          const plotsByPhase = {};
+          availablePlots.forEach(plot => {
+            const phase = plot.phase || 'Phase 1';
+            if (!plotsByPhase[phase]) plotsByPhase[phase] = [];
+            plotsByPhase[phase].push(plot);
+          });
+
+          // Sort phases alphabetically if needed, but taking keys is fine
+          return Object.keys(plotsByPhase).sort().map(phase => (
+            <div key={phase} style={{ marginBottom: '30px' }}>
+              <h4 style={{ fontSize: '18px', color: '#333', marginBottom: '15px' }}>Currently Available - {phase}</h4>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
+                <thead>
+                  <tr style={{ backgroundColor: '#f3f4f6', color: '#374151', textAlign: 'left' }}>
+                    <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Plot No.</th>
+                    <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Type</th>
+                    <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Facing</th>
+                    <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Area (sq ft)</th>
+                    <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Size</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                </thead>
+                <tbody>
+                  {plotsByPhase[phase].map((plot, i) => (
+                    <tr key={i} style={{ borderBottom: '1px solid #e5e7eb' }}>
+                      <td style={{ padding: '12px', fontWeight: '500' }}>{plot.name}</td>
+                      <td style={{ padding: '12px' }}>{plot.type}</td>
+                      <td style={{ padding: '12px' }}>{plot.facing}</td>
+                      <td style={{ padding: '12px' }}>{plot.area}</td>
+                      <td style={{ padding: '12px' }}>{plot.size}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ));
+        })()}
       </div>
 
       {/* FOOTER */}
