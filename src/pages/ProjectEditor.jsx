@@ -549,9 +549,6 @@ const ProjectEditor = () => {
     const p = plots[index];
     setPlotForm({ name: p.name, area: p.area, type: p.type, status: p.status, facing: p.facing, size: p.size, phase: p.phase || activePhase });
     setEditingPlot(index);
-    if (formRef.current) {
-      formRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
   };
 
   // --- Align Mode Logic ---
@@ -1159,9 +1156,10 @@ const ProjectEditor = () => {
               </div>
             )}
 
-            {/* ===== ADD / EDIT PLOT FORM ===== */}
-            <div className="form-section" ref={formRef}>
-              <h3>{editingPlot !== null ? 'Edit Plot' : 'Add New Plot'}</h3>
+            {/* ===== ADD PLOT FORM ===== */}
+            {editingPlot === null && (
+              <div className="form-section" ref={formRef}>
+                <h3>Add New Plot</h3>
               <div className="form-grid">
                 <div className="form-group">
                   <label>Plot Name *</label>
@@ -1213,19 +1211,10 @@ const ProjectEditor = () => {
                 </div>
               </div>
               <div className="form-actions">
-                {editingPlot !== null ? (
-                  <>
-                    <button className="btn-primary" onClick={updatePlot}>Update Plot</button>
-                    <button className="btn-secondary" onClick={() => {
-                      setEditingPlot(null);
-                      setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '' });
-                    }}>Cancel</button>
-                  </>
-                ) : (
-                  <button className="btn-primary" onClick={addPlot}>+ Add Plot</button>
-                )}
+                <button className="btn-primary" onClick={addPlot}>+ Add Plot</button>
               </div>
             </div>
+            )}
 
             {/* ===== SEARCH & FILTER BAR ===== */}
             <div className="form-section">
@@ -1316,25 +1305,77 @@ const ProjectEditor = () => {
                         const realIdx = plots.findIndex(p => p.id === plot.id);
                         return (
                           <tr key={plot.id} className={selectedPlots.has(plot.id) ? 'row-selected' : ''}>
-                            <td>
-                              <input
-                                type="checkbox"
-                                checked={selectedPlots.has(plot.id)}
-                                onChange={() => toggleSelectPlot(plot.id)}
-                              />
-                            </td>
-                            <td>{plot.name}</td>
-                            <td>{plot.phase || 'Phase 1'}</td>
-                            <td>{plot.area} sq ft</td>
-                            <td>{plot.size}</td>
-                            <td><span className={`type-badge ${plot.type.toLowerCase()}`}>{plot.type}</span></td>
-                            <td><span className={`status-badge ${plot.status.toLowerCase()}`}>{plot.status}</span></td>
-                            <td>{plot.facing}</td>
-                            <td>
-                              <button className="table-btn edit" onClick={() => startEditPlot(realIdx)}>Edit</button>
-                              <button className="table-btn duplicate" onClick={() => duplicatePlot(realIdx)} style={{ marginLeft: '4px', marginRight: '4px' }}>Duplicate</button>
-                              <button className="table-btn delete" onClick={() => deletePlot(realIdx)}>Delete</button>
-                            </td>
+                            {editingPlot === realIdx ? (
+                              <>
+                                <td>
+                                  <input type="checkbox" disabled />
+                                </td>
+                                <td><input value={plotForm.name} onChange={e => setPlotForm(p => ({...p, name: e.target.value}))} style={{width: '80px', padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}} /></td>
+                                <td>
+                                  <select value={plotForm.phase} onChange={e => setPlotForm(p => ({...p, phase: e.target.value}))} style={{padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}}>
+                                    {phases.map(ph => <option key={ph} value={ph}>{ph}</option>)}
+                                  </select>
+                                </td>
+                                <td><input type="number" value={plotForm.area} onChange={e => setPlotForm(p => ({...p, area: e.target.value}))} style={{width: '70px', padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}} /></td>
+                                <td><input value={plotForm.size} onChange={e => setPlotForm(p => ({...p, size: e.target.value}))} style={{width: '80px', padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}} /></td>
+                                <td>
+                                  <select value={plotForm.type} onChange={e => setPlotForm(p => ({...p, type: e.target.value}))} style={{padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}}>
+                                    <option value="Plot">Plot</option>
+                                    <option value="LIG">LIG</option>
+                                    <option value="EWS">EWS</option>
+                                    <option value="Commercial">Commercial</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <select value={plotForm.status} onChange={e => setPlotForm(p => ({...p, status: e.target.value}))} style={{padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}}>
+                                    <option value="Available">Available</option>
+                                    <option value="Booked">Booked</option>
+                                    <option value="Registered">Registered</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <select value={plotForm.facing} onChange={e => setPlotForm(p => ({...p, facing: e.target.value}))} style={{padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}}>
+                                    <option value="East">East</option>
+                                    <option value="West">West</option>
+                                    <option value="North">North</option>
+                                    <option value="South">South</option>
+                                    <option value="North-East">North-East</option>
+                                    <option value="North-West">North-West</option>
+                                    <option value="South-East">South-East</option>
+                                    <option value="South-West">South-West</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <button className="table-btn edit" onClick={updatePlot} style={{ background: '#22c55e', color: 'white', marginRight: '4px', border: 'none' }}>Save</button>
+                                  <button className="table-btn delete" onClick={() => {
+                                    setEditingPlot(null);
+                                    setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: activePhase });
+                                  }} style={{ border: 'none' }}>Cancel</button>
+                                </td>
+                              </>
+                            ) : (
+                              <>
+                                <td>
+                                  <input
+                                    type="checkbox"
+                                    checked={selectedPlots.has(plot.id)}
+                                    onChange={() => toggleSelectPlot(plot.id)}
+                                  />
+                                </td>
+                                <td>{plot.name}</td>
+                                <td>{plot.phase || 'Phase 1'}</td>
+                                <td>{plot.area} sq ft</td>
+                                <td>{plot.size}</td>
+                                <td><span className={`type-badge ${plot.type.toLowerCase()}`}>{plot.type}</span></td>
+                                <td><span className={`status-badge ${plot.status.toLowerCase()}`}>{plot.status}</span></td>
+                                <td>{plot.facing}</td>
+                                <td>
+                                  <button className="table-btn edit" onClick={() => startEditPlot(realIdx)}>Edit</button>
+                                  <button className="table-btn duplicate" onClick={() => duplicatePlot(realIdx)} style={{ marginLeft: '4px', marginRight: '4px' }}>Duplicate</button>
+                                  <button className="table-btn delete" onClick={() => deletePlot(realIdx)}>Delete</button>
+                                </td>
+                              </>
+                            )}
                           </tr>
                         );
                       })}
