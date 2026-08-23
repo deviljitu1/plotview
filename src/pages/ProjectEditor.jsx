@@ -1280,24 +1280,24 @@ const ProjectEditor = () => {
                 <p className="no-plots">No plots added yet. Add your first plot above, or import from an Excel file.</p>
               ) : (
                 <div className="plots-table-wrapper">
-                  <table className="plots-table" style={{ tableLayout: 'fixed', width: '100%' }}>
+                  <table className="plots-table">
                     <thead>
                       <tr>
-                        <th style={{ width: '40px' }}>
+                        <th style={{ width: 40 }}>
                           <input
                             type="checkbox"
                             checked={selectedPlots.size === filteredPlots.length && filteredPlots.length > 0}
                             onChange={toggleSelectAll}
                           />
                         </th>
-                        <th style={{ width: '12%' }}>Name</th>
-                        <th style={{ width: '12%' }}>Phase</th>
-                        <th style={{ width: '10%' }}>Area</th>
-                        <th style={{ width: '12%' }}>Size</th>
-                        <th style={{ width: '12%' }}>Type</th>
-                        <th style={{ width: '12%' }}>Status</th>
-                        <th style={{ width: '12%' }}>Facing</th>
-                        <th style={{ width: '180px' }}>Actions</th>
+                        <th>Name</th>
+                        <th>Phase</th>
+                        <th>Area</th>
+                        <th>Size</th>
+                        <th>Type</th>
+                        <th>Status</th>
+                        <th>Facing</th>
+                        <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -1310,16 +1310,16 @@ const ProjectEditor = () => {
                                 <td>
                                   <input type="checkbox" disabled />
                                 </td>
-                                <td><input value={plotForm.name} onChange={e => setPlotForm(p => ({...p, name: e.target.value}))} style={{width: '100%', padding: '4px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box'}} /></td>
+                                <td><input value={plotForm.name} onChange={e => setPlotForm(p => ({...p, name: e.target.value}))} style={{width: '80px', padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}} /></td>
                                 <td>
-                                  <select value={plotForm.phase} onChange={e => setPlotForm(p => ({...p, phase: e.target.value}))} style={{width: '100%', padding: '4px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box'}}>
+                                  <select value={plotForm.phase} onChange={e => setPlotForm(p => ({...p, phase: e.target.value}))} style={{padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}}>
                                     {phases.map(ph => <option key={ph} value={ph}>{ph}</option>)}
                                   </select>
                                 </td>
-                                <td><input type="number" value={plotForm.area} onChange={e => setPlotForm(p => ({...p, area: e.target.value}))} style={{width: '100%', padding: '4px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box'}} /></td>
-                                <td><input value={plotForm.size} onChange={e => setPlotForm(p => ({...p, size: e.target.value}))} style={{width: '100%', padding: '4px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box'}} /></td>
+                                <td><input type="number" value={plotForm.area} onChange={e => setPlotForm(p => ({...p, area: e.target.value}))} style={{width: '70px', padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}} /></td>
+                                <td><input value={plotForm.size} onChange={e => setPlotForm(p => ({...p, size: e.target.value}))} style={{width: '80px', padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}} /></td>
                                 <td>
-                                  <select value={plotForm.type} onChange={e => setPlotForm(p => ({...p, type: e.target.value}))} style={{width: '100%', padding: '4px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box'}}>
+                                  <select value={plotForm.type} onChange={e => setPlotForm(p => ({...p, type: e.target.value}))} style={{padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}}>
                                     <option value="Plot">Plot</option>
                                     <option value="LIG">LIG</option>
                                     <option value="EWS">EWS</option>
@@ -1327,14 +1327,14 @@ const ProjectEditor = () => {
                                   </select>
                                 </td>
                                 <td>
-                                  <select value={plotForm.status} onChange={e => setPlotForm(p => ({...p, status: e.target.value}))} style={{width: '100%', padding: '4px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box'}}>
+                                  <select value={plotForm.status} onChange={e => setPlotForm(p => ({...p, status: e.target.value}))} style={{padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}}>
                                     <option value="Available">Available</option>
                                     <option value="Booked">Booked</option>
                                     <option value="Registered">Registered</option>
                                   </select>
                                 </td>
                                 <td>
-                                  <select value={plotForm.facing} onChange={e => setPlotForm(p => ({...p, facing: e.target.value}))} style={{width: '100%', padding: '4px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box'}}>
+                                  <select value={plotForm.facing} onChange={e => setPlotForm(p => ({...p, facing: e.target.value}))} style={{padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}}>
                                     <option value="East">East</option>
                                     <option value="West">West</option>
                                     <option value="North">North</option>
@@ -1345,7 +1345,7 @@ const ProjectEditor = () => {
                                     <option value="South-West">South-West</option>
                                   </select>
                                 </td>
-                                <td>
+                                <td style={{ whiteSpace: 'nowrap' }}>
                                   <button className="table-btn edit" onClick={updatePlot} style={{ background: '#22c55e', color: 'white', marginRight: '4px', border: 'none' }}>Save</button>
                                   <button className="table-btn delete" onClick={() => {
                                     setEditingPlot(null);
@@ -1369,7 +1369,7 @@ const ProjectEditor = () => {
                                 <td><span className={`type-badge ${plot.type.toLowerCase()}`}>{plot.type}</span></td>
                                 <td><span className={`status-badge ${plot.status.toLowerCase()}`}>{plot.status}</span></td>
                                 <td>{plot.facing}</td>
-                                <td>
+                                <td style={{ whiteSpace: 'nowrap' }}>
                                   <button className="table-btn edit" onClick={() => startEditPlot(realIdx)}>Edit</button>
                                   <button className="table-btn duplicate" onClick={() => duplicatePlot(realIdx)} style={{ marginLeft: '4px', marginRight: '4px' }}>Duplicate</button>
                                   <button className="table-btn delete" onClick={() => deletePlot(realIdx)}>Delete</button>
