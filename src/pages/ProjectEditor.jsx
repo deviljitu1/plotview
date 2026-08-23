@@ -1446,7 +1446,7 @@ const ProjectEditor = () => {
                     </div>
                   </div>
                 </div>
-                <div className="align-canvas-wrapper" style={{ position: 'relative', overflow: 'hidden' }}>
+                <div className="align-canvas-wrapper" style={{ display: 'flex', position: 'relative', overflow: 'hidden', minHeight: '600px' }}>
                   {selectedAlignPlots.size > 0 && (() => {
                     const getBulkValue = (field) => {
                       const arr = Array.from(selectedAlignPlots);
@@ -1469,11 +1469,8 @@ const ProjectEditor = () => {
 
                     return (
                       <div style={{
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        bottom: 0,
                         width: '300px',
+                        flexShrink: 0,
                         background: 'white',
                         padding: '20px',
                         boxShadow: '4px 0 20px rgba(0,0,0,0.15)',
@@ -1593,17 +1590,18 @@ const ProjectEditor = () => {
                       </div>
                     );
                   })()}
-                  <svg
-                    ref={svgRef}
-                    viewBox={`0 0 ${imgDimensions.width} ${imgDimensions.height}`}
-                    className="align-svg"
-                    style={{ cursor: dragState ? 'grabbing' : 'crosshair' }}
-                    onClick={(e) => {
-                      if (e.target === svgRef.current || e.target.tagName === 'image') {
-                        setSelectedAlignPlots(new Set());
-                      }
-                    }}
-                  >
+                  <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                    <svg
+                      ref={svgRef}
+                      viewBox={`0 0 ${imgDimensions.width} ${imgDimensions.height}`}
+                      className="align-svg"
+                      style={{ cursor: dragState ? 'grabbing' : 'crosshair', width: '100%', height: '100%' }}
+                      onClick={(e) => {
+                        if (e.target === svgRef.current || e.target.tagName === 'image') {
+                          setSelectedAlignPlots(new Set());
+                        }
+                      }}
+                    >
                     <image
                       href={imagePreview || mapImageUrl}
                       width={imgDimensions.width}
@@ -1681,7 +1679,8 @@ const ProjectEditor = () => {
                     })}
                   </svg>
                 </div>
-              </>
+              </div>
+            </>
             )}
           </div>
         )}
