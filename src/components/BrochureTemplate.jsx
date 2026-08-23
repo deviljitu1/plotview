@@ -88,19 +88,18 @@ const BrochureTemplate = ({ project, plots }) => {
         </div>
 
         {(() => {
-          if (availablePlots.length === 0) return null;
+          if (plots.length === 0) return null;
           
           const plotsByPhase = {};
-          availablePlots.forEach(plot => {
+          plots.forEach(plot => {
             const phase = plot.phase || 'Phase 1';
             if (!plotsByPhase[phase]) plotsByPhase[phase] = [];
             plotsByPhase[phase].push(plot);
           });
 
-          // Sort phases alphabetically if needed, but taking keys is fine
           return Object.keys(plotsByPhase).sort().map(phase => (
             <div key={phase} style={{ marginBottom: '30px' }}>
-              <h4 style={{ fontSize: '18px', color: '#333', marginBottom: '15px' }}>Currently Available - {phase}</h4>
+              <h4 style={{ fontSize: '18px', color: '#333', marginBottom: '15px' }}>{phase} Plots</h4>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '14px' }}>
                 <thead>
                   <tr style={{ backgroundColor: '#f3f4f6', color: '#374151', textAlign: 'left' }}>
@@ -109,6 +108,7 @@ const BrochureTemplate = ({ project, plots }) => {
                     <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Facing</th>
                     <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Area (sq ft)</th>
                     <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Size</th>
+                    <th style={{ padding: '12px', borderBottom: '2px solid #e5e7eb' }}>Status</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -119,6 +119,18 @@ const BrochureTemplate = ({ project, plots }) => {
                       <td style={{ padding: '12px' }}>{plot.facing}</td>
                       <td style={{ padding: '12px' }}>{plot.area}</td>
                       <td style={{ padding: '12px' }}>{plot.size}</td>
+                      <td style={{ padding: '12px' }}>
+                        <span style={{ 
+                          padding: '4px 8px', 
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: '500',
+                          backgroundColor: plot.status === 'Available' ? '#dcfce7' : plot.status === 'Booked' ? '#fee2e2' : '#fef3c7',
+                          color: plot.status === 'Available' ? '#166534' : plot.status === 'Booked' ? '#991b1b' : '#92400e'
+                        }}>
+                          {plot.status}
+                        </span>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
