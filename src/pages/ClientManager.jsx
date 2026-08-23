@@ -11,7 +11,8 @@ const ClientManager = () => {
   const [plots, setPlots] = useState([]);
   
   const [editingPlotId, setEditingPlotId] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', type: '', size: '', area: '', status: 'Available' });
+  const [editForm, setEditForm] = useState({ name: '', type: '', size: '', area: '', status: 'Available', phase: 'Phase 1' });
+  const [activePhase, setActivePhase] = useState('All');
 
   const [passwordInput, setPasswordInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -104,7 +105,8 @@ const ClientManager = () => {
       type: plot.type || '',
       size: plot.size || '',
       area: plot.area || '',
-      status: plot.status || 'Available'
+      status: plot.status || 'Available',
+      phase: plot.phase || 'Phase 1'
     });
   };
 
@@ -121,7 +123,8 @@ const ClientManager = () => {
         type: editForm.type,
         size: editForm.size,
         area: Number(editForm.area) || 0,
-        status: editForm.status
+        status: editForm.status,
+        phase: editForm.phase
       };
       await updateDoc(plotRef, updatedData);
       setPlots(prev => prev.map(p => p.id === plotId ? { ...p, ...updatedData } : p));
@@ -133,6 +136,13 @@ const ClientManager = () => {
       setUpdating(null);
     }
   };
+
+  const availablePhases = React.useMemo(() => {
+    if (project?.phases && project.phases.length > 0) return project.phases;
+    const fromPlots = Array.from(new Set(plots.map(p => p.phase))).filter(Boolean);
+    if (fromPlots.length > 0) return fromPlots;
+    return ['Phase 1'];
+  }, [project, plots]);
 
   if (loading) {
     return <div className="client-manager-loading">Loading...</div>;
@@ -201,8 +211,29 @@ const ClientManager = () => {
       </header>
 
       <main className="client-dashboard-main">
+        {availablePhases.length > 0 && (
+          <div className="client-phase-tabs">
+            <button 
+              className={`btn-phase ${activePhase === 'All' ? 'active' : ''}`}
+              onClick={() => setActivePhase('All')}
+              style={activePhase === 'All' ? { background: project?.brandColor || '#6366f1', borderColor: project?.brandColor || '#6366f1' } : {}}
+            >
+              All Phases
+            </button>
+            {availablePhases.map(p => (
+              <button 
+                key={p} 
+                className={`btn-phase ${activePhase === p ? 'active' : ''}`}
+                onClick={() => setActivePhase(p)}
+                style={activePhase === p ? { background: project?.brandColor || '#6366f1', borderColor: project?.brandColor || '#6366f1' } : {}}
+              >
+                {p}
+              </button>
+            ))}
+          </div>
+        )}
         <div className="plots-grid">
-          {plots.map(plot => (
+          {plots.filter(p => activePhase === 'All' || (p.phase || 'Phase 1') === activePhase).map(plot => (
             <div key={plot.id} className="plot-manager-card">
               {editingPlotId === plot.id ? (
                 <div className="plot-edit-form">
@@ -240,6 +271,17 @@ const ClientManager = () => {
                     />
                   </div>
                   <div className="edit-form-group">
+                    <label>Phase</label>
+                    <select 
+                      value={editForm.phase} 
+                      onChange={e => setEditForm({...editForm, phase: e.target.value})}
+                    >
+                      {availablePhases.map(p => (
+                        <option key={p} value={p}>{p}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="edit-form-group">
                     <label>Status</label>
                     <select 
                       value={editForm.status} 
@@ -273,6 +315,10 @@ const ClientManager = () => {
                       <div className="detail-item">
                         <span className="detail-label">Size</span>
                         <span className="detail-value">{plot.size || '-'}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Phase</span>
+                        <span className="detail-value">{plot.phase || 'Phase 1'}</span>
                       </div>
                       <div className="detail-item">
                         <span className="detail-label">Area</span>
