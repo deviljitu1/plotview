@@ -1408,9 +1408,8 @@ const ProjectEditor = () => {
                     return (
                       <div style={{
                         position: 'absolute',
-                        bottom: '20px',
-                        left: '50%',
-                        transform: 'translateX(-50%)',
+                        top: '20px',
+                        left: '20px',
                         background: 'white',
                         padding: '12px 24px',
                         borderRadius: '8px',
