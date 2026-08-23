@@ -101,7 +101,7 @@ const BrochureTemplate = ({ project, plots }) => {
                 </tr>
               </thead>
               <tbody>
-                {availablePlots.slice(0, 15).map((plot, i) => (
+                {availablePlots.map((plot, i) => (
                   <tr key={i} style={{ borderBottom: '1px solid #e5e7eb' }}>
                     <td style={{ padding: '12px', fontWeight: '500' }}>{plot.name}</td>
                     <td style={{ padding: '12px' }}>{plot.type}</td>
@@ -110,13 +110,6 @@ const BrochureTemplate = ({ project, plots }) => {
                     <td style={{ padding: '12px' }}>{plot.size}</td>
                   </tr>
                 ))}
-                {availablePlots.length > 15 && (
-                  <tr>
-                    <td colSpan="5" style={{ padding: '12px', textAlign: 'center', color: '#6b7280', fontStyle: 'italic' }}>
-                      And {availablePlots.length - 15} more available plots...
-                    </td>
-                  </tr>
-                )}
               </tbody>
             </table>
           </div>
