@@ -1049,7 +1049,10 @@ const ProjectEditor = () => {
                 <button 
                   key={p} 
                   className={`btn-sm ${activePhase === p ? 'btn-primary' : 'btn-secondary'}`}
-                  onClick={() => setActivePhase(p)}
+                  onClick={() => {
+                    setActivePhase(p);
+                    setPlotForm(prev => ({...prev, phase: p}));
+                  }}
                 >
                   {p}
                 </button>
@@ -1061,6 +1064,7 @@ const ProjectEditor = () => {
                   if (name && !phases.includes(name)) {
                     setPhases(prev => [...prev, name]);
                     setActivePhase(name);
+                    setPlotForm(prev => ({...prev, phase: name}));
                   }
                 }}
               >
