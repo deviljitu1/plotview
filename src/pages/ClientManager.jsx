@@ -106,7 +106,8 @@ const ClientManager = () => {
       size: plot.size || '',
       area: plot.area || '',
       status: plot.status || 'Available',
-      phase: plot.phase || 'Phase 1'
+      phase: plot.phase || 'Phase 1',
+      facing: plot.facing || 'East'
     });
   };
 
@@ -124,7 +125,8 @@ const ClientManager = () => {
         size: editForm.size,
         area: Number(editForm.area) || 0,
         status: editForm.status,
-        phase: editForm.phase
+        phase: editForm.phase,
+        facing: editForm.facing
       };
       await updateDoc(plotRef, updatedData);
       setPlots(prev => prev.map(p => p.id === plotId ? { ...p, ...updatedData } : p));
@@ -271,6 +273,14 @@ const ClientManager = () => {
                     />
                   </div>
                   <div className="edit-form-group">
+                    <label>Facing</label>
+                    <input 
+                      value={editForm.facing} 
+                      onChange={e => setEditForm({...editForm, facing: e.target.value})} 
+                      placeholder="Facing (e.g. East)" 
+                    />
+                  </div>
+                  <div className="edit-form-group">
                     <label>Status</label>
                     <select 
                       value={editForm.status} 
@@ -312,6 +322,10 @@ const ClientManager = () => {
                       <div className="detail-item">
                         <span className="detail-label">Area</span>
                         <span className="detail-value">{plot.area ? `${plot.area} sqft` : '-'}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Facing</span>
+                        <span className="detail-value">{plot.facing || '-'}</span>
                       </div>
                     </div>
                   </div>
