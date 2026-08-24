@@ -1597,7 +1597,7 @@ const ProjectEditor = () => {
                       className="align-svg"
                       style={{ cursor: dragState ? 'grabbing' : 'crosshair', width: '100%', height: '100%' }}
                       onClick={(e) => {
-                        if (e.target === svgRef.current || e.target.tagName === 'image') {
+                        if (e.target === svgRef.current || e.target.tagName?.toLowerCase() === 'image') {
                           setSelectedAlignPlots(new Set());
                         }
                       }}
@@ -1633,6 +1633,7 @@ const ProjectEditor = () => {
                               });
                               handlePlotPointerDown(e, plot.id, pointsArr);
                             }}
+                            onClick={(e) => e.stopPropagation()}
                           />
                           {/* Draggable corner handles */}
                           {pointsArr.map((pt, idx) => (
@@ -1656,6 +1657,7 @@ const ProjectEditor = () => {
                                 });
                                 handlePointPointerDown(e, plot.id, idx);
                               }}
+                              onClick={(e) => e.stopPropagation()}
                             />
                           ))}
                           {/* Label */}
