@@ -1596,7 +1596,7 @@ const ProjectEditor = () => {
                       viewBox={`0 0 ${imgDimensions.width} ${imgDimensions.height}`}
                       className="align-svg"
                       style={{ cursor: dragState ? 'grabbing' : 'crosshair', width: '100%', height: '100%' }}
-                      onClick={(e) => {
+                      onPointerDown={(e) => {
                         if (e.target === svgRef.current || e.target.tagName?.toLowerCase() === 'image') {
                           setSelectedAlignPlots(new Set());
                         }
