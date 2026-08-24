@@ -249,11 +249,15 @@ const ClientManager = () => {
                   </div>
                   <div className="edit-form-group">
                     <label>Type</label>
-                    <input 
+                    <select 
                       value={editForm.type} 
-                      onChange={e => setEditForm({...editForm, type: e.target.value})} 
-                      placeholder="Type" 
-                    />
+                      onChange={e => setEditForm({...editForm, type: e.target.value})}
+                    >
+                      <option value="Plot">Plot</option>
+                      <option value="LIG">LIG</option>
+                      <option value="EWS">EWS</option>
+                      <option value="Commercial">Commercial</option>
+                    </select>
                   </div>
                   <div className="edit-form-group">
                     <label>Size</label>
@@ -274,11 +278,19 @@ const ClientManager = () => {
                   </div>
                   <div className="edit-form-group">
                     <label>Facing</label>
-                    <input 
+                    <select 
                       value={editForm.facing} 
-                      onChange={e => setEditForm({...editForm, facing: e.target.value})} 
-                      placeholder="Facing (e.g. East)" 
-                    />
+                      onChange={e => setEditForm({...editForm, facing: e.target.value})}
+                    >
+                      <option value="East">East</option>
+                      <option value="West">West</option>
+                      <option value="North">North</option>
+                      <option value="South">South</option>
+                      <option value="North-East">North-East</option>
+                      <option value="North-West">North-West</option>
+                      <option value="South-East">South-East</option>
+                      <option value="South-West">South-West</option>
+                    </select>
                   </div>
                   <div className="edit-form-group">
                     <label>Status</label>
