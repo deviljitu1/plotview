@@ -65,12 +65,15 @@ const PlotDetailsModal = ({ plot, project, brandColor, onClose }) => {
               <span className="info-label">Size</span>
               <span className="info-value">{plot.size}</span>
             </div>
+            {project?.showArea !== false && (
             <div className="info-chip">
               <span className="info-label">Area</span>
               <span className="info-value">{plot.area} sq.ft</span>
             </div>
+            )}
           </div>
 
+          {project?.showContactActions !== false && (
           <div className="action-row">
             <a 
               href={project?.contactPhone ? `tel:${formatPhone(project.contactPhone)}` : '#'} 
@@ -89,6 +92,8 @@ const PlotDetailsModal = ({ plot, project, brandColor, onClose }) => {
               <MessageCircle size={16} /> WhatsApp
             </a>
           </div>
+          )}
+
         </div>
       </div>
     </div>

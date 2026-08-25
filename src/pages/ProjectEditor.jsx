@@ -36,6 +36,8 @@ const ProjectEditor = () => {
   const [clientPassword, setClientPassword] = useState('');
   const [northOffset, setNorthOffset] = useState(0);
   const [projectFacing, setProjectFacing] = useState('North');
+  const [showArea, setShowArea] = useState(true);
+  const [showContactActions, setShowContactActions] = useState(true);
   
   const [googleMapsUrl, setGoogleMapsUrl] = useState('');
   
@@ -118,6 +120,8 @@ const ProjectEditor = () => {
         setClientPassword(data.clientPassword || '');
         setNorthOffset(data.northOffset || 0);
         setProjectFacing(data.projectFacing || 'North');
+        setShowArea(data.showArea !== false);
+        setShowContactActions(data.showContactActions !== false);
         
         setGoogleMapsUrl(data.googleMapsUrl || '');
         
@@ -646,6 +650,8 @@ const ProjectEditor = () => {
         clientPassword,
         northOffset: Number(northOffset),
         projectFacing,
+        showArea,
+        showContactActions,
         mapImageUrl: imageUrl,
         customBrochureUrl: brochureUrl,
         phases: phases,
@@ -796,6 +802,18 @@ const ProjectEditor = () => {
                     <option value="South-East">South-East</option>
                     <option value="South-West">South-West</option>
                   </select>
+                </div>
+                <div className="form-group">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', height: '100%', paddingTop: '1.5rem' }}>
+                    <input type="checkbox" checked={showArea} onChange={e => setShowArea(e.target.checked)} />
+                    Show Area in Popup
+                  </label>
+                </div>
+                <div className="form-group">
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', height: '100%', paddingTop: '1.5rem' }}>
+                    <input type="checkbox" checked={showContactActions} onChange={e => setShowContactActions(e.target.checked)} />
+                    Show Call/WhatsApp in Popup
+                  </label>
                 </div>
                 <div className="form-group">
                   <label>Client Logo</label>
