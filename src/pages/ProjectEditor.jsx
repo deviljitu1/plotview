@@ -804,13 +804,13 @@ const ProjectEditor = () => {
                   </select>
                 </div>
                 <div className="form-group">
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', height: '100%', paddingTop: '1.5rem' }}>
+                  <label className="toggle-switch-wrapper" style={{ height: '100%', paddingTop: '1.5rem' }}>
                     <input type="checkbox" checked={showArea} onChange={e => setShowArea(e.target.checked)} />
                     Show Area in Popup
                   </label>
                 </div>
                 <div className="form-group">
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', height: '100%', paddingTop: '1.5rem' }}>
+                  <label className="toggle-switch-wrapper" style={{ height: '100%', paddingTop: '1.5rem' }}>
                     <input type="checkbox" checked={showContactActions} onChange={e => setShowContactActions(e.target.checked)} />
                     Show Call/WhatsApp in Popup
                   </label>
@@ -1021,7 +1021,7 @@ const ProjectEditor = () => {
               <h3>Georeferencing (Satellite Map Integration)</h3>
               <div className="form-grid">
                 <div className="form-group full-width">
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                  <label className="toggle-switch-wrapper">
                     <input 
                       type="checkbox" 
                       checked={enableSatellite} 
