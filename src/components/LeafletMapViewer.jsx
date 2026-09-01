@@ -19,7 +19,7 @@ const LeafletMapViewer = ({ project, plots: plotsData, searchQuery, filterType, 
   const getFillColor = (status) => {
     switch (status) {
       case 'Available': return '#10b981';
-      case 'Booked': return '#f59e0b';
+      case 'Booked': return '#facc15';
       case 'Registered': return '#ef4444';
       default: return '#ffffff';
     }

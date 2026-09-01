@@ -23,8 +23,8 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
   const getFillColor = (status) => {
     switch (status) {
       case 'Available': return 'rgba(16, 185, 129, 0.35)';
-      case 'Booked': return 'rgba(245, 158, 11, 0.35)';
-      case 'Registered': return 'rgba(239, 68, 68, 0.35)';
+      case 'Booked': return 'rgba(250, 204, 21, 0.4)';
+      case 'Registered': return 'rgba(239, 68, 68, 0.4)';
       default: return 'rgba(255, 255, 255, 0.3)';
     }
   };

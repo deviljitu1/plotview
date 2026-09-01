@@ -66,7 +66,7 @@ const ProjectEditor = () => {
   const [alignPhaseFilter, setAlignPhaseFilter] = useState('All');
   const [editingPlot, setEditingPlot] = useState(null); // index or null
   const [plotForm, setPlotForm] = useState({
-    name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: 'Phase 1'
+    name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: 'Phase 1', registryClientName: ''
   });
   const [saveStatus, setSaveStatus] = useState('');
 
@@ -216,6 +216,7 @@ const ProjectEditor = () => {
             else if (k === 'status') normalized.status = String(row[key]).trim() || 'Available';
             else if (k.includes('facing') || k.includes('direction')) normalized.facing = String(row[key]).trim() || 'East';
             else if (k === 'phase') normalized.phase = String(row[key]).trim();
+            else if (k.includes('registry') || k.includes('client name')) normalized.registryClientName = String(row[key]).trim();
           });
 
           // Validate
@@ -240,6 +241,7 @@ const ProjectEditor = () => {
             type: normalized.type || 'Plot',
             status: normalized.status || 'Available',
             facing: normalized.facing || 'East',
+            registryClientName: normalized.registryClientName || '',
             points: '100,100 200,100 200,200 100,200'
           };
         });
@@ -517,14 +519,14 @@ const ProjectEditor = () => {
       points: '100,100 200,100 200,200 100,200' // Default rectangle
     };
     setPlots(prev => sortPlots([...prev, newPlot]));
-    setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: activePhase });
+    setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: activePhase, registryClientName: '' });
   };
 
   const updatePlot = () => {
     if (editingPlot === null) return;
     setPlots(prev => sortPlots(prev.map((p, i) => i === editingPlot ? { ...p, ...plotForm, area: Number(plotForm.area) || 0 } : p)));
     setEditingPlot(null);
-    setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: activePhase });
+    setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: activePhase, registryClientName: '' });
   };
 
   const deletePlot = (index) => {
@@ -551,7 +553,7 @@ const ProjectEditor = () => {
 
   const startEditPlot = (index) => {
     const p = plots[index];
-    setPlotForm({ name: p.name, area: p.area, type: p.type, status: p.status, facing: p.facing, size: p.size, phase: p.phase || activePhase });
+    setPlotForm({ name: p.name, area: p.area, type: p.type, status: p.status, facing: p.facing, size: p.size, phase: p.phase || activePhase, registryClientName: p.registryClientName || '' });
     setEditingPlot(index);
   };
 
@@ -692,6 +694,7 @@ const ProjectEditor = () => {
           status: plot.status,
           facing: plot.facing,
           size: plot.size,
+          registryClientName: plot.registryClientName || '',
           points: plot.points
         });
       });
@@ -1227,6 +1230,10 @@ const ProjectEditor = () => {
                     <option value="South-West">South-West</option>
                   </select>
                 </div>
+                <div className="form-group">
+                  <label>Registry Client Name</label>
+                  <input value={plotForm.registryClientName} onChange={e => setPlotForm(p => ({...p, registryClientName: e.target.value}))} placeholder="e.g. John Doe" />
+                </div>
               </div>
               <div className="form-actions">
                 <button className="btn-primary" onClick={addPlot}>+ Add Plot</button>
@@ -1315,6 +1322,7 @@ const ProjectEditor = () => {
                         <th>Type</th>
                         <th>Status</th>
                         <th>Facing</th>
+                        <th>Registry Name</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
@@ -1363,11 +1371,14 @@ const ProjectEditor = () => {
                                     <option value="South-West">South-West</option>
                                   </select>
                                 </td>
+                                <td>
+                                  <input value={plotForm.registryClientName} onChange={e => setPlotForm(p => ({...p, registryClientName: e.target.value}))} style={{width: '100px', padding: '4px', border: '1px solid #ccc', borderRadius: '4px'}} placeholder="Client Name" />
+                                </td>
                                 <td style={{ whiteSpace: 'nowrap' }}>
                                   <button className="table-btn edit" onClick={updatePlot} style={{ background: '#22c55e', color: 'white', marginRight: '4px', border: 'none' }}>Save</button>
                                   <button className="table-btn delete" onClick={() => {
                                     setEditingPlot(null);
-                                    setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: activePhase });
+                                    setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: activePhase, registryClientName: '' });
                                   }} style={{ border: 'none' }}>Cancel</button>
                                 </td>
                               </>
@@ -1387,6 +1398,7 @@ const ProjectEditor = () => {
                                 <td><span className={`type-badge ${plot.type.toLowerCase()}`}>{plot.type}</span></td>
                                 <td><span className={`status-badge ${plot.status.toLowerCase()}`}>{plot.status}</span></td>
                                 <td>{plot.facing}</td>
+                                <td>{plot.registryClientName || '-'}</td>
                                 <td style={{ whiteSpace: 'nowrap' }}>
                                   <button className="table-btn edit" onClick={() => startEditPlot(realIdx)}>Edit</button>
                                   <button className="table-btn duplicate" onClick={() => duplicatePlot(realIdx)} style={{ marginLeft: '4px', marginRight: '4px' }}>Duplicate</button>
