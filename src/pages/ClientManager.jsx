@@ -313,6 +313,7 @@ const ClientManager = () => {
                       onChange={e => setEditForm({...editForm, registryClientName: e.target.value})} 
                       placeholder="Client Name" 
                     />
+                  </div>
                   <div className="edit-actions">
                     <button className="btn-save" onClick={() => handleSavePlot(plot.id)} disabled={updating === plot.id}>
                       {updating === plot.id ? 'Saving...' : 'Save'}
