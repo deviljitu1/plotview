@@ -116,6 +116,10 @@
   gap: 0.2rem;
 }
 
+.info-chip.full-width {
+  grid-column: 1 / -1;
+}
+
 .info-label {
   font-size: 0.65rem;
   color: #888;

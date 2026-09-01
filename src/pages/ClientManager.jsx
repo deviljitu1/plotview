@@ -107,7 +107,9 @@ const ClientManager = () => {
       area: plot.area || '',
       status: plot.status || 'Available',
       phase: plot.phase || 'Phase 1',
-      facing: plot.facing || 'East'
+      facing: plot.facing || 'East',
+      registryClientName: plot.registryClientName || '',
+      registryClientNumber: plot.registryClientNumber || ''
     });
   };
 
@@ -126,7 +128,9 @@ const ClientManager = () => {
         area: Number(editForm.area) || 0,
         status: editForm.status,
         phase: editForm.phase,
-        facing: editForm.facing
+        facing: editForm.facing,
+        registryClientName: editForm.registryClientName,
+        registryClientNumber: editForm.registryClientNumber
       };
       await updateDoc(plotRef, updatedData);
       setPlots(prev => prev.map(p => p.id === plotId ? { ...p, ...updatedData } : p));
@@ -304,6 +308,22 @@ const ClientManager = () => {
                       <option value="Registered">Registered</option>
                     </select>
                   </div>
+                  <div className="edit-form-group">
+                    <label>Registry Client Name</label>
+                    <input 
+                      value={editForm.registryClientName} 
+                      onChange={e => setEditForm({...editForm, registryClientName: e.target.value})} 
+                      placeholder="Client Name" 
+                    />
+                  </div>
+                  <div className="edit-form-group">
+                    <label>Registry Client Number</label>
+                    <input 
+                      value={editForm.registryClientNumber} 
+                      onChange={e => setEditForm({...editForm, registryClientNumber: e.target.value})} 
+                      placeholder="Client Number" 
+                    />
+                  </div>
                   <div className="edit-actions">
                     <button className="btn-save" onClick={() => handleSavePlot(plot.id)} disabled={updating === plot.id}>
                       {updating === plot.id ? 'Saving...' : 'Save'}
@@ -339,6 +359,18 @@ const ClientManager = () => {
                         <span className="detail-label">Facing</span>
                         <span className="detail-value">{plot.facing || '-'}</span>
                       </div>
+                      {plot.registryClientName && (
+                        <div className="detail-item full-width">
+                          <span className="detail-label">Registry Client Name</span>
+                          <span className="detail-value">{plot.registryClientName}</span>
+                        </div>
+                      )}
+                      {plot.registryClientNumber && (
+                        <div className="detail-item full-width">
+                          <span className="detail-label">Registry Client Number</span>
+                          <span className="detail-value">{plot.registryClientNumber}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="plot-actions-row">

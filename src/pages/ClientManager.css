@@ -333,6 +333,10 @@
   gap: 0.1rem;
 }
 
+.detail-item.full-width {
+  grid-column: 1 / -1;
+}
+
 .detail-label {
   font-size: 0.65rem;
   color: #64748b;

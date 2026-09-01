@@ -71,6 +71,18 @@ const PlotDetailsModal = ({ plot, project, brandColor, onClose }) => {
               <span className="info-value">{plot.area} sq.ft</span>
             </div>
             )}
+            {plot.registryClientName && (
+              <div className="info-chip full-width">
+                <span className="info-label">Registry Client Name</span>
+                <span className="info-value">{plot.registryClientName}</span>
+              </div>
+            )}
+            {plot.registryClientNumber && (
+              <div className="info-chip full-width">
+                <span className="info-label">Registry Client Number</span>
+                <span className="info-value">{plot.registryClientNumber}</span>
+              </div>
+            )}
           </div>
 
           {project?.showContactActions !== false && (
