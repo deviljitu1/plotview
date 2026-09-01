@@ -1616,6 +1616,16 @@ const ProjectEditor = () => {
                               <option value="South-West">South-West</option>
                             </select>
                           </div>
+
+                          <div className="form-group" style={{ marginBottom: 0 }}>
+                            <label style={{ fontSize: '13px', marginBottom: '4px' }}>Registry Client Name</label>
+                            <input 
+                              value={getBulkValue('registryClientName')}
+                              onChange={(e) => updateSelectedPlots('registryClientName', e.target.value)} 
+                              placeholder={selectedAlignPlots.size > 1 ? '--- Mixed ---' : ''}
+                              style={{ padding: '6px', fontSize: '13px' }}
+                            />
+                          </div>
                         </div>
                       </div>
                     );
