@@ -276,6 +276,18 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
 
                       const facingIconSrc = getFacingIcon(plot.facing);
 
+                      // Calculate a reasonable font size based on polygon size
+                      let fontSize = 10;
+                      if (visible && plot.points) {
+                        const pts = plot.points.trim().split(' ').map(p => p.split(',').map(Number));
+                        const xs = pts.map(p => p[0]);
+                        const ys = pts.map(p => p[1]);
+                        const polyW = Math.max(...xs) - Math.min(...xs);
+                        const polyH = Math.max(...ys) - Math.min(...ys);
+                        const minDim = Math.min(polyW, polyH);
+                        fontSize = Math.max(6, Math.min(14, minDim * 0.18));
+                      }
+
                       return (
                         <g 
                           key={plot.id} 
@@ -297,6 +309,24 @@ const MapViewer = ({ project, plots: plotsData, searchQuery, filterType, filterS
                                 fill="transparent"
                                 className="plot-polygon-hover"
                               />
+                              {/* Plot number label */}
+                              <text
+                                x={cx}
+                                y={cy}
+                                textAnchor="middle"
+                                dominantBaseline="middle"
+                                fontSize={fontSize}
+                                fontWeight="700"
+                                fontFamily="Inter, sans-serif"
+                                fill="white"
+                                style={{
+                                  pointerEvents: 'none',
+                                  userSelect: 'none',
+                                  filter: 'drop-shadow(0px 0px 2px rgba(0,0,0,0.9)) drop-shadow(0px 0px 1px rgba(0,0,0,0.7))'
+                                }}
+                              >
+                                {plot.name}
+                              </text>
                             </>
                           )}
                         </g>

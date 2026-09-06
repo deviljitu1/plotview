@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { db } from '../lib/firebase';
 import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
@@ -141,12 +141,24 @@ const ClientManager = () => {
     }
   };
 
-  const availablePhases = React.useMemo(() => {
+  const availablePhases = useMemo(() => {
     if (project?.phases && project.phases.length > 0) return project.phases;
     const fromPlots = Array.from(new Set(plots.map(p => p.phase))).filter(Boolean);
     if (fromPlots.length > 0) return fromPlots;
     return ['Phase 1'];
   }, [project, plots]);
+
+  const filteredPlots = useMemo(() => {
+    return plots.filter(p => activePhase === 'All' || (p.phase || 'Phase 1') === activePhase);
+  }, [plots, activePhase]);
+
+  const stats = useMemo(() => {
+    const total = filteredPlots.length;
+    const available = filteredPlots.filter(p => p.status === 'Available').length;
+    const booked = filteredPlots.filter(p => p.status === 'Booked').length;
+    const registered = filteredPlots.filter(p => p.status === 'Registered').length;
+    return { total, available, booked, registered };
+  }, [filteredPlots]);
 
   if (loading) {
     return <div className="client-manager-loading">Loading...</div>;
@@ -236,8 +248,28 @@ const ClientManager = () => {
             ))}
           </div>
         )}
+        {/* Stats Summary Bar */}
+        <div className="client-stats-bar">
+          <div className="client-stat-chip">
+            <span className="client-stat-num">{stats.total}</span>
+            <span className="client-stat-label">Total</span>
+          </div>
+          <div className="client-stat-chip available">
+            <span className="client-stat-num">{stats.available}</span>
+            <span className="client-stat-label">Available</span>
+          </div>
+          <div className="client-stat-chip booked">
+            <span className="client-stat-num">{stats.booked}</span>
+            <span className="client-stat-label">Booked</span>
+          </div>
+          <div className="client-stat-chip registered">
+            <span className="client-stat-num">{stats.registered}</span>
+            <span className="client-stat-label">Registered</span>
+          </div>
+        </div>
+
         <div className="plots-grid">
-          {plots.filter(p => activePhase === 'All' || (p.phase || 'Phase 1') === activePhase).map(plot => (
+          {filteredPlots.map(plot => (
             <div key={plot.id} className="plot-manager-card">
               {editingPlotId === plot.id ? (
                 <div className="plot-edit-form">
