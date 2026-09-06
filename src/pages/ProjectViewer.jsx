@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { collection, getDocs, query, where } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { Menu } from 'lucide-react';
 import { db } from '../lib/firebase';
 import MapViewer from '../components/MapViewer';
@@ -23,58 +23,78 @@ const ProjectViewer = () => {
   const [filterPhase, setFilterPhase] = useState('All');
   const [selectedPlot, setSelectedPlot] = useState(null);
 
+  // Holds unsubscribe functions for real-time listeners
+  const unsubscribeRef = useRef([]);
+
   useEffect(() => {
-    loadProject();
-  }, [slug]);
+    // Clean up any previous listeners
+    unsubscribeRef.current.forEach(fn => fn());
+    unsubscribeRef.current = [];
 
-  const loadProject = async () => {
-    try {
-      if (slug === 'example') {
-        // Load mock example
-        setProject({
-          id: 'example',
-          name: 'Sunrise Villas (Example)',
-          clientName: 'Demo Real Estate',
-          brandColor: '#8b5cf6',
-          mapImageUrl: '/map-background.png',
-          imgDimensions: { width: 1000, height: 750 },
-          geoBounds: {
-            enabled: true,
-            topLeft: { lat: 21.2460, lng: 81.6275 },
-            bottomRight: { lat: 21.2435, lng: 81.6320 }
-          }
-        });
-        setPlots(mockPlots);
-        setLoading(false);
-        return;
-      }
+    if (slug === 'example') {
+      setProject({
+        id: 'example',
+        name: 'Sunrise Villas (Example)',
+        clientName: 'Demo Real Estate',
+        brandColor: '#8b5cf6',
+        mapImageUrl: '/map-background.png',
+        imgDimensions: { width: 1000, height: 750 },
+        geoBounds: {
+          enabled: true,
+          topLeft: { lat: 21.2460, lng: 81.6275 },
+          bottomRight: { lat: 21.2435, lng: 81.6320 }
+        }
+      });
+      setPlots(mockPlots);
+      setLoading(false);
+      return;
+    }
 
-      // Query project by slug
-      const q = query(collection(db, 'projects'), where('slug', '==', slug));
-      const querySnapshot = await getDocs(q);
-      
-      if (querySnapshot.empty) {
+    // Real-time listener: project by slug
+    const projectQuery = query(collection(db, 'projects'), where('slug', '==', slug));
+    const unsubProject = onSnapshot(projectQuery, (snapshot) => {
+      if (snapshot.empty) {
         setError('Project not found.');
         setLoading(false);
         return;
       }
 
-      const projectDoc = querySnapshot.docs[0];
+      const projectDoc = snapshot.docs[0];
       const projectData = { id: projectDoc.id, ...projectDoc.data() };
       setProject(projectData);
 
-      // Load plots
-      const plotsSnap = await getDocs(collection(db, 'projects', projectDoc.id, 'plots'));
-      const plotsList = plotsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      plotsList.sort((a, b) => (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' }));
-      setPlots(plotsList);
-    } catch (err) {
-      console.error('Error loading project:', err);
+      // Real-time listener: plots subcollection
+      const plotsCol = collection(db, 'projects', projectDoc.id, 'plots');
+      const unsubPlots = onSnapshot(plotsCol, (plotsSnap) => {
+        const plotsList = plotsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        plotsList.sort((a, b) =>
+          (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' })
+        );
+        setPlots(plotsList);
+        setLoading(false);
+      }, (err) => {
+        console.error('Error listening to plots:', err);
+        setError('Failed to load plots.');
+        setLoading(false);
+      });
+
+      // Replace plots unsubscribe (index 1)
+      if (unsubscribeRef.current[1]) unsubscribeRef.current[1]();
+      unsubscribeRef.current[1] = unsubPlots;
+    }, (err) => {
+      console.error('Error listening to project:', err);
       setError('Failed to load project.');
-    } finally {
       setLoading(false);
-    }
-  };
+    });
+
+    unsubscribeRef.current[0] = unsubProject;
+
+    // Cleanup on unmount or slug change
+    return () => {
+      unsubscribeRef.current.forEach(fn => fn && fn());
+      unsubscribeRef.current = [];
+    };
+  }, [slug]);
 
   const plotTypes = ['All', ...new Set(plots.map(p => p.type).filter(Boolean))];
   const phases = ['All', ...new Set(plots.map(p => p.phase || 'Phase 1'))];
