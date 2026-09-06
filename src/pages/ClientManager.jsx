@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { db } from '../lib/firebase';
-import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
+import {
+  collection, query, where, getDocs,
+  doc, updateDoc, onSnapshot
+} from 'firebase/firestore';
 import './ClientManager.css';
 
 const ClientManager = () => {
@@ -9,117 +12,137 @@ const ClientManager = () => {
   const [project, setProject] = useState(null);
   const [projectId, setProjectId] = useState(null);
   const [plots, setPlots] = useState([]);
-  
-  const [editingPlotId, setEditingPlotId] = useState(null);
-  const [editForm, setEditForm] = useState({ name: '', type: '', size: '', area: '', status: 'Available', phase: 'Phase 1' });
   const [activePhase, setActivePhase] = useState('All');
 
+  // Auth
   const [passwordInput, setPasswordInput] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  // UI state
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [updating, setUpdating] = useState(null);
+  const [updating, setUpdating] = useState(null); // plotId being saved
 
+  // Edit modal
+  const [editingPlot, setEditingPlot] = useState(null); // full plot object
+  const [editForm, setEditForm] = useState({});
+  const [saveError, setSaveError] = useState('');
+
+  // Real-time unsubscribe ref
+  const unsubRef = useRef(null);
+
+  // ── Step 1: Load project by slug (one-time, just to get project info + password) ──
   useEffect(() => {
+    const fetchProject = async () => {
+      try {
+        const q = query(collection(db, 'projects'), where('slug', '==', slug));
+        const snapshot = await getDocs(q);
+        if (snapshot.empty) {
+          setError('Project not found');
+          setLoading(false);
+          return;
+        }
+        const pDoc = snapshot.docs[0];
+        setProject(pDoc.data());
+        setProjectId(pDoc.id);
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching project:', err);
+        setError('Failed to load project: ' + err.message);
+        setLoading(false);
+      }
+    };
     fetchProject();
   }, [slug]);
 
-  const fetchProject = async () => {
-    try {
-      const q = query(collection(db, 'projects'), where('slug', '==', slug));
-      const snapshot = await getDocs(q);
-      
-      if (snapshot.empty) {
-        setError('Project not found');
-        setLoading(false);
-        return;
+  // ── Step 2: Once authenticated, subscribe to plots in real-time ──
+  useEffect(() => {
+    if (!isAuthenticated || !projectId) return;
+
+    // Unsubscribe any previous listener
+    if (unsubRef.current) unsubRef.current();
+
+    const plotsCol = collection(db, 'projects', projectId, 'plots');
+    const unsub = onSnapshot(
+      plotsCol,
+      (snap) => {
+        const list = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        list.sort((a, b) =>
+          (a.name || '').localeCompare(b.name || '', undefined, { numeric: true, sensitivity: 'base' })
+        );
+        setPlots(list);
+      },
+      (err) => {
+        console.error('Firestore onSnapshot error:', err);
+        setError('Live sync error: ' + err.message);
       }
+    );
 
-      const pDoc = snapshot.docs[0];
-      setProject(pDoc.data());
-      setProjectId(pDoc.id);
-      setLoading(false);
-    } catch (err) {
-      console.error('Error fetching project:', err);
-      setError('Failed to load project.');
-      setLoading(false);
-    }
-  };
+    unsubRef.current = unsub;
+    return () => { if (unsubRef.current) unsubRef.current(); };
+  }, [isAuthenticated, projectId]);
 
-  const handleLogin = async (e) => {
+  // ── Login ──
+  const handleLogin = (e) => {
     e.preventDefault();
     if (!project) return;
-    
     if (!project.clientPassword) {
-      setError('Client login is not fully configured for this project. Please contact the administrator.');
+      setError('Client login not configured. Contact administrator.');
       return;
     }
-
     if (passwordInput === project.clientPassword) {
       setIsAuthenticated(true);
       setError('');
-      await loadPlots(projectId);
     } else {
       setError('Incorrect password');
     }
   };
 
-  const loadPlots = async (id) => {
-    try {
-      const plotsSnap = await getDocs(collection(db, 'projects', id, 'plots'));
-      const plotsList = plotsSnap.docs.map(d => ({ id: d.id, ...d.data() }));
-      
-      // Sort alphabetically/numerically
-      plotsList.sort((a, b) => {
-        const numA = parseInt(a.name.replace(/\D/g, '')) || 0;
-        const numB = parseInt(b.name.replace(/\D/g, '')) || 0;
-        return numA - numB || a.name.localeCompare(b.name);
-      });
-
-      setPlots(plotsList);
-    } catch (err) {
-      console.error('Error loading plots:', err);
-      setError('Failed to load plots');
-    }
-  };
-
-  const handleStatusChange = async (plotId, newStatus) => {
+  // ── Quick status change (one-click, saves directly to Firestore) ──
+  const handleQuickStatus = async (plotId, newStatus) => {
     setUpdating(plotId);
+    setSaveError('');
     try {
       const plotRef = doc(db, 'projects', projectId, 'plots', plotId);
       await updateDoc(plotRef, { status: newStatus });
-      setPlots(prev => prev.map(p => p.id === plotId ? { ...p, status: newStatus } : p));
+      // onSnapshot will automatically refresh the list
     } catch (err) {
-      console.error('Error updating status:', err);
-      alert('Failed to update status. Please try again.');
+      console.error('Firestore updateDoc error:', err.code, err.message);
+      setSaveError(`Failed to update plot ${plotId}: [${err.code}] ${err.message}`);
     } finally {
       setUpdating(null);
     }
   };
 
-  const startEdit = (plot) => {
-    setEditingPlotId(plot.id);
+  // ── Open edit modal ──
+  const openEdit = (plot) => {
+    setEditingPlot(plot);
     setEditForm({
       name: plot.name || '',
-      type: plot.type || '',
+      type: plot.type || 'Plot',
       size: plot.size || '',
       area: plot.area || '',
       status: plot.status || 'Available',
       phase: plot.phase || 'Phase 1',
       facing: plot.facing || 'East',
-      registryClientName: plot.registryClientName || ''
+      registryClientName: plot.registryClientName || '',
     });
+    setSaveError('');
   };
 
-  const cancelEdit = () => {
-    setEditingPlotId(null);
+  const closeEdit = () => {
+    setEditingPlot(null);
+    setSaveError('');
   };
 
-  const handleSavePlot = async (plotId) => {
-    setUpdating(plotId);
+  // ── Save all fields from edit modal ──
+  const handleSaveEdit = async () => {
+    if (!editingPlot) return;
+    setUpdating(editingPlot.id);
+    setSaveError('');
     try {
-      const plotRef = doc(db, 'projects', projectId, 'plots', plotId);
+      const plotRef = doc(db, 'projects', projectId, 'plots', editingPlot.id);
       const updatedData = {
         name: editForm.name,
         type: editForm.type,
@@ -128,46 +151,43 @@ const ClientManager = () => {
         status: editForm.status,
         phase: editForm.phase,
         facing: editForm.facing,
-        registryClientName: editForm.registryClientName
+        registryClientName: editForm.registryClientName,
       };
       await updateDoc(plotRef, updatedData);
-      setPlots(prev => prev.map(p => p.id === plotId ? { ...p, ...updatedData } : p));
-      setEditingPlotId(null);
+      // onSnapshot will refresh automatically
+      closeEdit();
     } catch (err) {
-      console.error('Error updating plot:', err);
-      alert('Failed to update plot. Please try again.');
+      console.error('Firestore save error:', err.code, err.message);
+      setSaveError(`Save failed: [${err.code}] ${err.message}`);
     } finally {
       setUpdating(null);
     }
   };
 
+  // ── Computed values ──
   const availablePhases = useMemo(() => {
     if (project?.phases && project.phases.length > 0) return project.phases;
     const fromPlots = Array.from(new Set(plots.map(p => p.phase))).filter(Boolean);
-    if (fromPlots.length > 0) return fromPlots;
-    return ['Phase 1'];
+    return fromPlots.length > 0 ? fromPlots : ['Phase 1'];
   }, [project, plots]);
 
-  const filteredPlots = useMemo(() => {
-    return plots.filter(p => activePhase === 'All' || (p.phase || 'Phase 1') === activePhase);
-  }, [plots, activePhase]);
+  const filteredPlots = useMemo(() =>
+    plots.filter(p => activePhase === 'All' || (p.phase || 'Phase 1') === activePhase),
+    [plots, activePhase]
+  );
 
-  const stats = useMemo(() => {
-    const total = filteredPlots.length;
-    const available = filteredPlots.filter(p => p.status === 'Available').length;
-    const booked = filteredPlots.filter(p => p.status === 'Booked').length;
-    const registered = filteredPlots.filter(p => p.status === 'Registered').length;
-    return { total, available, booked, registered };
-  }, [filteredPlots]);
+  const stats = useMemo(() => ({
+    total: filteredPlots.length,
+    available: filteredPlots.filter(p => p.status === 'Available').length,
+    booked: filteredPlots.filter(p => p.status === 'Booked').length,
+    registered: filteredPlots.filter(p => p.status === 'Registered').length,
+  }), [filteredPlots]);
 
-  if (loading) {
-    return <div className="client-manager-loading">Loading...</div>;
-  }
+  // ── Render: Loading ──
+  if (loading) return <div className="client-manager-loading">Loading...</div>;
+  if (error && !project) return <div className="client-manager-error">{error}</div>;
 
-  if (error && !project) {
-    return <div className="client-manager-error">{error}</div>;
-  }
-
+  // ── Render: Login screen ──
   if (!isAuthenticated) {
     return (
       <div className="client-login-container">
@@ -177,27 +197,33 @@ const ClientManager = () => {
           )}
           <h2>{project?.name}</h2>
           <p>Client Management Portal</p>
-          
+
           <form onSubmit={handleLogin} className="client-login-form">
             <div className="client-password-wrapper">
-              <input 
-                type={showPassword ? "text" : "password"} 
-                placeholder="Enter Access Password" 
+              <input
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter Access Password"
                 value={passwordInput}
-                onChange={(e) => setPasswordInput(e.target.value)}
+                onChange={e => setPasswordInput(e.target.value)}
                 required
               />
               <button
                 type="button"
                 className="client-password-toggle"
-                onClick={() => setShowPassword(!showPassword)}
+                onClick={() => setShowPassword(v => !v)}
                 tabIndex={-1}
-                aria-label="Toggle password visibility"
+                aria-label="Toggle password"
               >
                 {showPassword ? (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19m-6.72-1.07a3 3 0 11-4.24-4.24"/>
+                    <line x1="1" y1="1" x2="23" y2="23"/>
+                  </svg>
                 ) : (
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                    <circle cx="12" cy="12" r="3"/>
+                  </svg>
                 )}
               </button>
             </div>
@@ -211,9 +237,13 @@ const ClientManager = () => {
     );
   }
 
+  const STATUS_OPTIONS = ['Available', 'Booked', 'Registered'];
+  const brandColor = project?.brandColor || '#6366f1';
+
+  // ── Render: Dashboard ──
   return (
     <div className="client-dashboard">
-      <header className="client-dashboard-header" style={{ borderBottomColor: project?.brandColor || '#6366f1' }}>
+      <header className="client-dashboard-header" style={{ borderBottomColor: brandColor }}>
         <div className="header-content">
           {project?.clientLogo && <img src={project.clientLogo} alt="Logo" className="header-logo" />}
           <div>
@@ -221,34 +251,44 @@ const ClientManager = () => {
             <p>Inventory Status Manager</p>
           </div>
         </div>
-        <button className="btn-logout" onClick={() => setIsAuthenticated(false)}>
+        <button className="btn-logout" onClick={() => { setIsAuthenticated(false); setPlots([]); }}>
           Lock / Logout
         </button>
       </header>
 
       <main className="client-dashboard-main">
-        {availablePhases.length > 0 && (
+        {/* Global error banner */}
+        {saveError && (
+          <div className="cm-error-banner">
+            ⚠️ {saveError}
+            <button onClick={() => setSaveError('')}>✕</button>
+          </div>
+        )}
+
+        {/* Phase tabs */}
+        {availablePhases.length > 1 && (
           <div className="client-phase-tabs">
-            <button 
+            <button
               className={`btn-phase ${activePhase === 'All' ? 'active' : ''}`}
               onClick={() => setActivePhase('All')}
-              style={activePhase === 'All' ? { background: project?.brandColor || '#6366f1', borderColor: project?.brandColor || '#6366f1' } : {}}
+              style={activePhase === 'All' ? { background: brandColor, borderColor: brandColor } : {}}
             >
               All Phases
             </button>
             {availablePhases.map(p => (
-              <button 
-                key={p} 
+              <button
+                key={p}
                 className={`btn-phase ${activePhase === p ? 'active' : ''}`}
                 onClick={() => setActivePhase(p)}
-                style={activePhase === p ? { background: project?.brandColor || '#6366f1', borderColor: project?.brandColor || '#6366f1' } : {}}
+                style={activePhase === p ? { background: brandColor, borderColor: brandColor } : {}}
               >
                 {p}
               </button>
             ))}
           </div>
         )}
-        {/* Stats Summary Bar */}
+
+        {/* Stats bar */}
         <div className="client-stats-bar">
           <div className="client-stat-chip">
             <span className="client-stat-num">{stats.total}</span>
@@ -268,136 +308,192 @@ const ClientManager = () => {
           </div>
         </div>
 
-        <div className="plots-grid">
-          {filteredPlots.map(plot => (
-            <div key={plot.id} className="plot-manager-card">
-              {editingPlotId === plot.id ? (
-                <div className="plot-edit-form">
-                  <div className="edit-form-group">
-                    <label>Name</label>
-                    <input 
-                      value={editForm.name} 
-                      onChange={e => setEditForm({...editForm, name: e.target.value})} 
-                      placeholder="Name" 
-                    />
+        {/* Plot grid */}
+        {filteredPlots.length === 0 ? (
+          <div className="cm-empty">No plots found. Make sure plots are saved in the admin panel.</div>
+        ) : (
+          <div className="plots-grid">
+            {filteredPlots.map(plot => {
+              const isBusy = updating === plot.id;
+              return (
+                <div key={plot.id} className={`plot-manager-card status-card-${plot.status?.toLowerCase()}`}>
+                  {/* Header row */}
+                  <div className="plot-info-header">
+                    <h3>{plot.name}</h3>
+                    <span className={`status-badge ${plot.status?.toLowerCase()}`}>{plot.status}</span>
                   </div>
-                  <div className="edit-form-group">
-                    <label>Type</label>
-                    <select 
-                      value={editForm.type} 
-                      onChange={e => setEditForm({...editForm, type: e.target.value})}
+
+                  {/* Details grid */}
+                  <div className="plot-details-grid">
+                    <div className="detail-item">
+                      <span className="detail-label">Type</span>
+                      <span className="detail-value">{plot.type || '-'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Size</span>
+                      <span className="detail-value">{plot.size || '-'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Area</span>
+                      <span className="detail-value">{plot.area ? `${plot.area} sqft` : '-'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Facing</span>
+                      <span className="detail-value">{plot.facing || '-'}</span>
+                    </div>
+                    <div className="detail-item">
+                      <span className="detail-label">Phase</span>
+                      <span className="detail-value">{plot.phase || 'Phase 1'}</span>
+                    </div>
+                    {plot.registryClientName && (
+                      <div className="detail-item full-width">
+                        <span className="detail-label">Registry Client</span>
+                        <span className="detail-value">{plot.registryClientName}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Quick status buttons */}
+                  <div className="quick-status-row">
+                    <span className="quick-status-label">Change Status:</span>
+                    <div className="quick-status-btns">
+                      {STATUS_OPTIONS.map(s => (
+                        <button
+                          key={s}
+                          className={`btn-quick-status ${s.toLowerCase()} ${plot.status === s ? 'current' : ''}`}
+                          onClick={() => handleQuickStatus(plot.id, s)}
+                          disabled={isBusy || plot.status === s}
+                          title={`Mark as ${s}`}
+                        >
+                          {isBusy && plot.status !== s ? '…' : s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Edit all details button */}
+                  <div className="plot-actions-row">
+                    <button
+                      className="btn-edit"
+                      onClick={() => openEdit(plot)}
+                      disabled={isBusy}
                     >
-                      <option value="Plot">Plot</option>
-                      <option value="LIG">LIG</option>
-                      <option value="EWS">EWS</option>
-                      <option value="Commercial">Commercial</option>
-                    </select>
-                  </div>
-                  <div className="edit-form-group">
-                    <label>Size</label>
-                    <input 
-                      value={editForm.size} 
-                      onChange={e => setEditForm({...editForm, size: e.target.value})} 
-                      placeholder="Size" 
-                    />
-                  </div>
-                  <div className="edit-form-group">
-                    <label>Area (sqft)</label>
-                    <input 
-                      type="number" 
-                      value={editForm.area} 
-                      onChange={e => setEditForm({...editForm, area: e.target.value})} 
-                      placeholder="Area" 
-                    />
-                  </div>
-                  <div className="edit-form-group">
-                    <label>Facing</label>
-                    <select 
-                      value={editForm.facing} 
-                      onChange={e => setEditForm({...editForm, facing: e.target.value})}
-                    >
-                      <option value="East">East</option>
-                      <option value="West">West</option>
-                      <option value="North">North</option>
-                      <option value="South">South</option>
-                      <option value="North-East">North-East</option>
-                      <option value="North-West">North-West</option>
-                      <option value="South-East">South-East</option>
-                      <option value="South-West">South-West</option>
-                    </select>
-                  </div>
-                  <div className="edit-form-group">
-                    <label>Status</label>
-                    <select 
-                      value={editForm.status} 
-                      onChange={e => setEditForm({...editForm, status: e.target.value})}
-                      className={`status-select ${editForm.status.toLowerCase()}`}
-                    >
-                      <option value="Available">Available</option>
-                      <option value="Booked">Booked</option>
-                      <option value="Registered">Registered</option>
-                    </select>
-                  </div>
-                  <div className="edit-form-group">
-                    <label>Registry Client Name</label>
-                    <input 
-                      value={editForm.registryClientName} 
-                      onChange={e => setEditForm({...editForm, registryClientName: e.target.value})} 
-                      placeholder="Client Name" 
-                    />
-                  </div>
-                  <div className="edit-actions">
-                    <button className="btn-save" onClick={() => handleSavePlot(plot.id)} disabled={updating === plot.id}>
-                      {updating === plot.id ? 'Saving...' : 'Save'}
+                      ✏️ Edit Details
                     </button>
-                    <button className="btn-cancel" onClick={cancelEdit} disabled={updating === plot.id}>Cancel</button>
                   </div>
                 </div>
-              ) : (
-                <>
-                  <div className="plot-info-extended">
-                    <div className="plot-info-header">
-                      <h3>{plot.name}</h3>
-                      <span className={`status-badge ${plot.status.toLowerCase()}`}>{plot.status}</span>
-                    </div>
-                    <div className="plot-details-grid">
-                      <div className="detail-item">
-                        <span className="detail-label">Type</span>
-                        <span className="detail-value">{plot.type || '-'}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-label">Size</span>
-                        <span className="detail-value">{plot.size || '-'}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-label">Phase</span>
-                        <span className="detail-value">{plot.phase || 'Phase 1'}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-label">Area</span>
-                        <span className="detail-value">{plot.area ? `${plot.area} sqft` : '-'}</span>
-                      </div>
-                      <div className="detail-item">
-                        <span className="detail-label">Facing</span>
-                        <span className="detail-value">{plot.facing || '-'}</span>
-                      </div>
-                      {plot.registryClientName && (
-                        <div className="detail-item full-width">
-                          <span className="detail-label">Registry Client Name</span>
-                          <span className="detail-value">{plot.registryClientName}</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  <div className="plot-actions-row">
-                    <button onClick={() => startEdit(plot)} className="btn-edit" disabled={updating === plot.id}>Edit Plot</button>
-                  </div>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
+              );
+            })}
+          </div>
+        )}
       </main>
+
+      {/* ── Edit Modal ── */}
+      {editingPlot && (
+        <div className="cm-modal-overlay" onClick={closeEdit}>
+          <div className="cm-modal" onClick={e => e.stopPropagation()}>
+            <div className="cm-modal-header">
+              <h2>Edit Plot — {editingPlot.name}</h2>
+              <button className="cm-modal-close" onClick={closeEdit}>✕</button>
+            </div>
+
+            <div className="cm-modal-body">
+              {saveError && <div className="error-text" style={{ marginBottom: '0.75rem' }}>{saveError}</div>}
+
+              <div className="cm-form-grid">
+                <div className="edit-form-group">
+                  <label>Plot Name</label>
+                  <input
+                    value={editForm.name}
+                    onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))}
+                    placeholder="e.g. Plot 19"
+                  />
+                </div>
+
+                <div className="edit-form-group">
+                  <label>Status</label>
+                  <select
+                    value={editForm.status}
+                    onChange={e => setEditForm(f => ({ ...f, status: e.target.value }))}
+                    className={`status-select ${editForm.status?.toLowerCase()}`}
+                  >
+                    <option value="Available">Available</option>
+                    <option value="Booked">Booked</option>
+                    <option value="Registered">Registered</option>
+                  </select>
+                </div>
+
+                <div className="edit-form-group">
+                  <label>Type</label>
+                  <select
+                    value={editForm.type}
+                    onChange={e => setEditForm(f => ({ ...f, type: e.target.value }))}
+                  >
+                    <option value="Plot">Plot</option>
+                    <option value="LIG">LIG</option>
+                    <option value="EWS">EWS</option>
+                    <option value="Commercial">Commercial</option>
+                  </select>
+                </div>
+
+                <div className="edit-form-group">
+                  <label>Facing</label>
+                  <select
+                    value={editForm.facing}
+                    onChange={e => setEditForm(f => ({ ...f, facing: e.target.value }))}
+                  >
+                    {['East','West','North','South','North-East','North-West','South-East','South-West'].map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="edit-form-group">
+                  <label>Size</label>
+                  <input
+                    value={editForm.size}
+                    onChange={e => setEditForm(f => ({ ...f, size: e.target.value }))}
+                    placeholder="e.g. 40' x 30'"
+                  />
+                </div>
+
+                <div className="edit-form-group">
+                  <label>Area (sqft)</label>
+                  <input
+                    type="number"
+                    value={editForm.area}
+                    onChange={e => setEditForm(f => ({ ...f, area: e.target.value }))}
+                    placeholder="e.g. 1200"
+                  />
+                </div>
+
+                <div className="edit-form-group full-width">
+                  <label>Registry Client Name</label>
+                  <input
+                    value={editForm.registryClientName}
+                    onChange={e => setEditForm(f => ({ ...f, registryClientName: e.target.value }))}
+                    placeholder="Buyer / registered owner name"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="cm-modal-footer">
+              <button className="btn-cancel" onClick={closeEdit} disabled={updating === editingPlot.id}>
+                Cancel
+              </button>
+              <button
+                className="btn-save"
+                onClick={handleSaveEdit}
+                disabled={updating === editingPlot.id}
+                style={{ background: brandColor }}
+              >
+                {updating === editingPlot.id ? 'Saving…' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

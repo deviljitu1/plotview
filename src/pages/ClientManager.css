@@ -1,3 +1,175 @@
+/* ── Error banner ── */
+.cm-error-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  gap: 1rem;
+}
+.cm-error-banner button {
+  background: none;
+  border: none;
+  color: #dc2626;
+  cursor: pointer;
+  font-size: 1rem;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+/* ── Empty state ── */
+.cm-empty {
+  text-align: center;
+  color: #94a3b8;
+  padding: 3rem 1rem;
+  font-size: 1rem;
+}
+
+/* ── Card status left border ── */
+.status-card-available { border-left: 4px solid #10b981; }
+.status-card-booked    { border-left: 4px solid #f59e0b; }
+.status-card-registered{ border-left: 4px solid #ef4444; }
+
+/* ── Quick status row ── */
+.quick-status-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.25rem;
+}
+.quick-status-label {
+  font-size: 0.7rem;
+  color: #64748b;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+}
+.quick-status-btns {
+  display: flex;
+  gap: 0.4rem;
+}
+.btn-quick-status {
+  flex: 1;
+  padding: 0.4rem 0.25rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: 'Inter', sans-serif;
+}
+.btn-quick-status.available         { background: #f0fdf4; color: #059669; border-color: #bbf7d0; }
+.btn-quick-status.available:hover:not(:disabled) { background: #dcfce7; }
+.btn-quick-status.available.current { background: #10b981; color: white; border-color: #10b981; }
+.btn-quick-status.booked            { background: #fffbeb; color: #d97706; border-color: #fde68a; }
+.btn-quick-status.booked:hover:not(:disabled) { background: #fef3c7; }
+.btn-quick-status.booked.current    { background: #f59e0b; color: white; border-color: #f59e0b; }
+.btn-quick-status.registered        { background: #fef2f2; color: #dc2626; border-color: #fecaca; }
+.btn-quick-status.registered:hover:not(:disabled) { background: #fee2e2; }
+.btn-quick-status.registered.current{ background: #ef4444; color: white; border-color: #ef4444; }
+.btn-quick-status:disabled          { opacity: 0.5; cursor: not-allowed; }
+
+/* ── Edit Modal ── */
+.cm-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+.cm-modal {
+  background: white;
+  border-radius: 14px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+  font-family: 'Inter', sans-serif;
+  overflow: hidden;
+}
+.cm-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 1.5rem 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+.cm-modal-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+.cm-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 4px;
+  line-height: 1;
+}
+.cm-modal-close:hover { background: #f1f5f9; }
+.cm-modal-body {
+  padding: 1.25rem 1.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+.cm-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+.cm-form-grid .edit-form-group.full-width {
+  grid-column: 1 / -1;
+}
+.cm-modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  border-top: 1px solid #e2e8f0;
+}
+.cm-modal-footer .btn-save {
+  flex: 1;
+  padding: 0.7rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  font-weight: 600;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.cm-modal-footer .btn-save:hover:not(:disabled) { opacity: 0.9; }
+.cm-modal-footer .btn-cancel {
+  flex: 1;
+  padding: 0.7rem;
+  font-size: 0.95rem;
+  border-radius: 8px;
+  font-weight: 500;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+}
+.cm-modal-footer .btn-cancel:hover { background: #e2e8f0; }
+
+@media (max-width: 500px) {
+  .cm-form-grid { grid-template-columns: 1fr; }
+  .cm-modal { max-height: 95vh; }
+}
+
 .client-manager-loading,
 .client-manager-error {
   display: flex;
