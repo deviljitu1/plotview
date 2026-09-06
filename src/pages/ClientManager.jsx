@@ -5,6 +5,7 @@ import {
   collection, query, where, getDocs,
   doc, updateDoc, onSnapshot
 } from 'firebase/firestore';
+import MapViewer from '../components/MapViewer';
 import './ClientManager.css';
 
 const ClientManager = () => {
@@ -308,84 +309,22 @@ const ClientManager = () => {
           </div>
         </div>
 
-        {/* Plot grid */}
-        {filteredPlots.length === 0 ? (
-          <div className="cm-empty">No plots found. Make sure plots are saved in the admin panel.</div>
-        ) : (
-          <div className="plots-grid">
-            {filteredPlots.map(plot => {
-              const isBusy = updating === plot.id;
-              return (
-                <div key={plot.id} className={`plot-manager-card status-card-${plot.status?.toLowerCase()}`}>
-                  {/* Header row */}
-                  <div className="plot-info-header">
-                    <h3>{plot.name}</h3>
-                    <span className={`status-badge ${plot.status?.toLowerCase()}`}>{plot.status}</span>
-                  </div>
-
-                  {/* Details grid */}
-                  <div className="plot-details-grid">
-                    <div className="detail-item">
-                      <span className="detail-label">Type</span>
-                      <span className="detail-value">{plot.type || '-'}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Size</span>
-                      <span className="detail-value">{plot.size || '-'}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Area</span>
-                      <span className="detail-value">{plot.area ? `${plot.area} sqft` : '-'}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Facing</span>
-                      <span className="detail-value">{plot.facing || '-'}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Phase</span>
-                      <span className="detail-value">{plot.phase || 'Phase 1'}</span>
-                    </div>
-                    {plot.registryClientName && (
-                      <div className="detail-item full-width">
-                        <span className="detail-label">Registry Client</span>
-                        <span className="detail-value">{plot.registryClientName}</span>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Quick status buttons */}
-                  <div className="quick-status-row">
-                    <span className="quick-status-label">Change Status:</span>
-                    <div className="quick-status-btns">
-                      {STATUS_OPTIONS.map(s => (
-                        <button
-                          key={s}
-                          className={`btn-quick-status ${s.toLowerCase()} ${plot.status === s ? 'current' : ''}`}
-                          onClick={() => handleQuickStatus(plot.id, s)}
-                          disabled={isBusy || plot.status === s}
-                          title={`Mark as ${s}`}
-                        >
-                          {isBusy && plot.status !== s ? '…' : s}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Edit all details button */}
-                  <div className="plot-actions-row">
-                    <button
-                      className="btn-edit"
-                      onClick={() => openEdit(plot)}
-                      disabled={isBusy}
-                    >
-                      ✏️ Edit Details
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+        {/* Map Container */}
+        <div className="cm-map-wrapper">
+          <MapViewer
+            project={project}
+            plots={filteredPlots}
+            searchQuery=""
+            filterType="All"
+            filterStatus="All"
+            filterPhase={activePhase}
+            northOffset={project?.northOffset || 0}
+            projectFacing={project?.projectFacing || 'North'}
+            selectedPlot={editingPlot}
+            setSelectedPlot={openEdit}
+            disableModal={true}
+          />
+        </div>
       </main>
 
       {/* ── Edit Modal ── */}
