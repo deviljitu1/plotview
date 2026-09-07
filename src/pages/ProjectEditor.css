@@ -531,6 +531,14 @@
   border-bottom: 1px solid rgba(255,255,255,0.04);
 }
 
+.plots-table th:last-child,
+.plots-table td:last-child {
+  position: sticky;
+  right: 0;
+  background: #0f172a; /* Match the table row background */
+  z-index: 1;
+}
+
 .row-selected {
   background: rgba(99, 102, 241, 0.05);
 }

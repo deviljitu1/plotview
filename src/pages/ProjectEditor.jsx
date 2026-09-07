@@ -232,8 +232,8 @@ const ProjectEditor = () => {
             normalized.status = match || 'Available';
           }
 
-            const offsetX = (idx % 10) * 110;
-            const offsetY = Math.floor(idx / 10) * 110;
+            const offsetX = (idx % 15) * 20;
+            const offsetY = (Math.floor(idx / 15) % 15) * 20;
             return {
               id: uuidv4(),
               name: normalized.name || `Plot ${idx + 1}`,
@@ -514,8 +514,8 @@ const ProjectEditor = () => {
   const addPlot = () => {
     if (!plotForm.name) return alert('Plot name is required.');
     const idx = plots.length;
-    const offsetX = (idx % 10) * 110;
-    const offsetY = Math.floor(idx / 10) * 110;
+    const offsetX = (idx % 15) * 20;
+    const offsetY = (Math.floor(idx / 15) % 15) * 20;
     const newPlot = {
       id: uuidv4(),
       ...plotForm,
@@ -1640,7 +1640,7 @@ const ProjectEditor = () => {
                       ref={svgRef}
                       viewBox={`0 0 ${imgDimensions.width} ${imgDimensions.height}`}
                       className="align-svg"
-                      style={{ cursor: dragState ? 'grabbing' : 'crosshair', width: '100%', height: '100%' }}
+                      style={{ cursor: dragState ? 'grabbing' : 'crosshair', width: '100%', height: '100%', overflow: 'visible' }}
                       onPointerDown={(e) => {
                         if (e.target === svgRef.current || e.target.tagName?.toLowerCase() === 'image') {
                           setSelectedAlignPlots(new Set());
