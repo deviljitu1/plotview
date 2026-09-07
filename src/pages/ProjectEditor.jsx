@@ -87,7 +87,7 @@ const ProjectEditor = () => {
   // Align Mode
   const [activeTab, setActiveTab] = useState('details');
   const [dragState, setDragState] = useState(null);
-  const [plotMenu, setPlotMenu] = useState(null);
+  const [interactionMode, setInteractionMode] = useState('align'); // 'align' | 'edit'
   const [showAlignSidebar, setShowAlignSidebar] = useState(false);
   const [selectedAlignPlots, setSelectedAlignPlots] = useState(new Set());
   const svgRef = useRef(null);
@@ -100,6 +100,28 @@ const ProjectEditor = () => {
   const [loading, setLoading] = useState(isEditing);
 
   // Load existing project
+  // Function to generate well-spaced default coordinates based on image size
+  const getDefaultPlotPoints = (idx, imgDims) => {
+    const baseW = imgDims ? imgDims.width : 800;
+    const baseH = imgDims ? imgDims.height : 600;
+    
+    // Create a 10x15 grid for default plot placement
+    const cols = 10;
+    const cellW = baseW / cols;
+    const cellH = baseH / 15;
+    
+    const col = idx % cols;
+    const row = Math.floor(idx / cols) % 15;
+    
+    // Add 10% padding inside the cell
+    const x = col * cellW + cellW * 0.1;
+    const y = row * cellH + cellH * 0.1;
+    const w = cellW * 0.8;
+    const h = cellH * 0.8;
+    
+    return `${Math.round(x)},${Math.round(y)} ${Math.round(x + w)},${Math.round(y)} ${Math.round(x + w)},${Math.round(y + h)} ${Math.round(x)},${Math.round(y + h)}`;
+  };
+
   useEffect(() => {
     if (isEditing) {
       loadProject();
@@ -234,8 +256,7 @@ const ProjectEditor = () => {
             normalized.status = match || 'Available';
           }
 
-            const offsetX = (idx % 15) * 20;
-            const offsetY = (Math.floor(idx / 15) % 15) * 20;
+            const defaultPoints = getDefaultPlotPoints(idx, imgDimensions);
             return {
               id: uuidv4(),
               name: normalized.name || `Plot ${idx + 1}`,
@@ -246,7 +267,7 @@ const ProjectEditor = () => {
               status: normalized.status || 'Available',
               facing: normalized.facing || 'East',
               registryClientName: normalized.registryClientName || '',
-              points: `${100 + offsetX},${100 + offsetY} ${200 + offsetX},${100 + offsetY} ${200 + offsetX},${200 + offsetY} ${100 + offsetX},${200 + offsetY}`
+              points: defaultPoints
             };
           });
 
@@ -516,14 +537,13 @@ const ProjectEditor = () => {
   const addPlot = () => {
     if (!plotForm.name) return alert('Plot name is required.');
     const idx = plots.length;
-    const offsetX = (idx % 15) * 20;
-    const offsetY = (Math.floor(idx / 15) % 15) * 20;
+    const defaultPoints = getDefaultPlotPoints(idx, imgDimensions);
     const newPlot = {
       id: uuidv4(),
       ...plotForm,
       phase: plotForm.phase || activePhase,
       area: Number(plotForm.area) || 0,
-      points: `${100 + offsetX},${100 + offsetY} ${200 + offsetX},${100 + offsetY} ${200 + offsetX},${200 + offsetY} ${100 + offsetX},${200 + offsetY}`
+      points: defaultPoints
     };
     setPlots(prev => sortPlots([...prev, newPlot]));
     setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: activePhase, registryClientName: '' });
@@ -588,7 +608,6 @@ const ProjectEditor = () => {
       clientY: e.clientY,
       hasMoved: false
     });
-    setPlotMenu(null);
   };
 
   const handlePointerMove = useCallback((e) => {
@@ -635,9 +654,6 @@ const ProjectEditor = () => {
   }, [dragState]);
 
   const handlePointerUp = useCallback((e) => {
-    if (dragState && dragState.type === 'plot' && !dragState.hasMoved && e) {
-      setPlotMenu({ x: e.clientX, y: e.clientY, plotId: dragState.plotId });
-    }
     setDragState(null);
   }, [dragState]);
 
@@ -1477,6 +1493,31 @@ const ProjectEditor = () => {
                           {phases.map(p => <option key={p} value={p}>{p}</option>)}
                         </select>
                       </div>
+                      
+                      {/* Interaction Mode Toggle */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '1rem' }}>
+                        <span style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Mode:</span>
+                        <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', padding: '2px', borderRadius: '6px', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          <button
+                            style={{ 
+                              padding: '4px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer',
+                              background: interactionMode === 'align' ? '#6366f1' : 'transparent',
+                              color: interactionMode === 'align' ? 'white' : '#cbd5e1',
+                              fontWeight: interactionMode === 'align' ? 'bold' : 'normal'
+                            }}
+                            onClick={() => { setInteractionMode('align'); setShowAlignSidebar(false); }}
+                          >✋ Align</button>
+                          <button
+                            style={{ 
+                              padding: '4px 12px', border: 'none', borderRadius: '4px', cursor: 'pointer',
+                              background: interactionMode === 'edit' ? '#6366f1' : 'transparent',
+                              color: interactionMode === 'edit' ? 'white' : '#cbd5e1',
+                              fontWeight: interactionMode === 'edit' ? 'bold' : 'normal'
+                            }}
+                            onClick={() => setInteractionMode('edit')}
+                          >✏️ Edit</button>
+                        </div>
+                      </div>
                     </div>
                     <div className="visual-compass-calibrator" style={{ display: 'flex', alignItems: 'center', gap: '1rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
                       <div style={{ textAlign: 'center' }}>
@@ -1686,14 +1727,8 @@ const ProjectEditor = () => {
                       
                       // Recover corrupted plots by resetting to default box
                       if (pointsArr.length < 3 || pointsArr.some(p => isNaN(p[0]) || isNaN(p[1]))) {
-                        const ox = (idx % 15) * 20;
-                        const oy = (Math.floor(idx / 15) % 15) * 20;
-                        pointsArr = [
-                          [100 + ox, 100 + oy],
-                          [200 + ox, 100 + oy],
-                          [200 + ox, 200 + oy],
-                          [100 + ox, 200 + oy]
-                        ];
+                        const defaultPts = getDefaultPlotPoints(idx, imgDimensions);
+                        pointsArr = defaultPts.split(' ').map(p => p.split(',').map(Number));
                       }
 
                       const isHighlighted = selectedAlignPlots.has(plot.id);
@@ -1705,7 +1740,7 @@ const ProjectEditor = () => {
                             fill={isHighlighted ? 'rgba(99,102,241,0.35)' : 'rgba(0,0,0,0.2)'}
                             stroke={isHighlighted ? '#6366f1' : 'rgba(255,255,255,0.7)'}
                             strokeWidth={isHighlighted ? 3 : 1.5}
-                            style={{ pointerEvents: 'all', cursor: 'grab' }}
+                            style={{ pointerEvents: 'all', cursor: interactionMode === 'align' ? 'grab' : 'pointer' }}
                             onPointerDown={(e) => {
                               if (e.shiftKey || e.ctrlKey || e.metaKey) {
                                 setSelectedAlignPlots(prev => {
@@ -1714,16 +1749,20 @@ const ProjectEditor = () => {
                                   else next.add(plot.id);
                                   return next;
                                 });
-                                setShowAlignSidebar(true);
+                                if (interactionMode === 'edit') setShowAlignSidebar(true);
                               } else {
                                 setSelectedAlignPlots(new Set([plot.id]));
-                                handlePlotPointerDown(e, plot.id, pointsArr);
+                                if (interactionMode === 'edit') {
+                                  setShowAlignSidebar(true);
+                                } else {
+                                  handlePlotPointerDown(e, plot.id, pointsArr);
+                                }
                               }
                             }}
                             onClick={(e) => e.stopPropagation()}
                           />
                           {/* Draggable corner handles */}
-                          {pointsArr.map((pt, idx) => (
+                          {isHighlighted && interactionMode === 'align' && pointsArr.map((pt, idx) => (
                             <circle
                               key={idx}
                               cx={pt[0]}
@@ -1772,47 +1811,6 @@ const ProjectEditor = () => {
           </div>
         )}
       </main>
-
-      {plotMenu && (
-        <div 
-          style={{
-            position: 'fixed',
-            left: plotMenu.x,
-            top: plotMenu.y,
-            background: 'white',
-            padding: '12px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-            zIndex: 9999,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '8px'
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <div style={{ fontSize: '13px', fontWeight: 'bold', color: '#1e293b', marginBottom: '4px', textAlign: 'center' }}>Plot Options</div>
-          <button 
-            className="btn-primary" 
-            style={{ padding: '6px 12px', fontSize: '13px', width: '100%' }}
-            onClick={() => {
-              setSelectedAlignPlots(new Set([plotMenu.plotId]));
-              setShowAlignSidebar(true);
-              setPlotMenu(null);
-            }}
-          >
-            ✏️ Edit Details
-          </button>
-          <button 
-            className="btn-secondary" 
-            style={{ padding: '6px 12px', fontSize: '13px', width: '100%' }}
-            onClick={() => {
-              setPlotMenu(null);
-            }}
-          >
-            ✋ Align (Drag)
-          </button>
-        </div>
-      )}
     </div>
   );
 };
