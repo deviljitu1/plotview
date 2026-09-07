@@ -1704,8 +1704,9 @@ const ProjectEditor = () => {
                         </div>
                       );
                     })()}
-                    <svg
-                      ref={svgRef}
+                    <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+                      <svg
+                        ref={svgRef}
                       viewBox={`0 0 ${imgDimensions.width} ${imgDimensions.height}`}
                       className="align-svg"
                       style={{ cursor: dragState ? 'grabbing' : 'crosshair', width: '100%', height: '100%', overflow: 'visible' }}
@@ -1803,9 +1804,10 @@ const ProjectEditor = () => {
                         </g>
                       );
                     })}
-                  </svg>
+                    </svg>
+                    </div>
+                  </div>
                 </div>
-              </div>
             </>
             )}
           </div>
