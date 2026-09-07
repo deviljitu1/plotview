@@ -1549,8 +1549,8 @@ const ProjectEditor = () => {
                     </div>
                   </div>
                 </div>
-                <div className="align-content-row" style={{ display: 'flex', gap: '20px', flex: 1, minHeight: 0 }}>
-                  <div className="align-canvas-wrapper" style={{ display: 'flex', position: 'relative', overflow: 'hidden', minHeight: '600px' }}>
+                <div className="align-content-row" style={{ display: 'flex', gap: '20px', flex: 1, minHeight: 0, width: '100%' }}>
+                  <div className="align-canvas-wrapper" style={{ display: 'flex', position: 'relative', overflow: 'hidden', minHeight: '600px', flex: 1, width: '100%' }}>
                     {showAlignSidebar && selectedAlignPlots.size > 0 && (() => {
                       const getBulkValue = (field) => {
                         const arr = Array.from(selectedAlignPlots);
