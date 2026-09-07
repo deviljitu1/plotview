@@ -232,22 +232,24 @@ const ProjectEditor = () => {
             normalized.status = match || 'Available';
           }
 
-          return {
-            id: uuidv4(),
-            name: normalized.name || `Plot ${idx + 1}`,
-            phase: normalized.phase || activePhase,
-            area: normalized.area || 0,
-            size: normalized.size || '',
-            type: normalized.type || 'Plot',
-            status: normalized.status || 'Available',
-            facing: normalized.facing || 'East',
-            registryClientName: normalized.registryClientName || '',
-            points: '100,100 200,100 200,200 100,200'
-          };
-        });
+            const offsetX = (idx % 10) * 110;
+            const offsetY = Math.floor(idx / 10) * 110;
+            return {
+              id: uuidv4(),
+              name: normalized.name || `Plot ${idx + 1}`,
+              phase: normalized.phase || activePhase,
+              area: normalized.area || 0,
+              size: normalized.size || '',
+              type: normalized.type || 'Plot',
+              status: normalized.status || 'Available',
+              facing: normalized.facing || 'East',
+              registryClientName: normalized.registryClientName || '',
+              points: `${100 + offsetX},${100 + offsetY} ${200 + offsetX},${100 + offsetY} ${200 + offsetX},${200 + offsetY} ${100 + offsetX},${200 + offsetY}`
+            };
+          });
 
-        setImportPreview(parsed);
-        setImportErrors(errors);
+          setImportPreview(parsed);
+          setImportErrors(errors);
       } catch (err) {
         alert('Error reading file: ' + err.message);
       }
@@ -511,12 +513,15 @@ const ProjectEditor = () => {
   // Plot CRUD
   const addPlot = () => {
     if (!plotForm.name) return alert('Plot name is required.');
+    const idx = plots.length;
+    const offsetX = (idx % 10) * 110;
+    const offsetY = Math.floor(idx / 10) * 110;
     const newPlot = {
       id: uuidv4(),
       ...plotForm,
       phase: plotForm.phase || activePhase,
       area: Number(plotForm.area) || 0,
-      points: '100,100 200,100 200,200 100,200' // Default rectangle
+      points: `${100 + offsetX},${100 + offsetY} ${200 + offsetX},${100 + offsetY} ${200 + offsetX},${200 + offsetY} ${100 + offsetX},${200 + offsetY}`
     };
     setPlots(prev => sortPlots([...prev, newPlot]));
     setPlotForm({ name: '', area: '', type: 'Plot', status: 'Available', facing: 'East', size: '', phase: activePhase, registryClientName: '' });
@@ -1702,8 +1707,8 @@ const ProjectEditor = () => {
                           ))}
                           {/* Label */}
                           <text
-                            x={(pointsArr[0][0] + pointsArr[2][0]) / 2}
-                            y={(pointsArr[0][1] + pointsArr[2][1]) / 2}
+                            x={pointsArr.length > 2 ? (Math.min(...pointsArr.map(p => p[0])) + Math.max(...pointsArr.map(p => p[0]))) / 2 : (pointsArr[0]?.[0] || 0)}
+                            y={pointsArr.length > 2 ? (Math.min(...pointsArr.map(p => p[1])) + Math.max(...pointsArr.map(p => p[1]))) / 2 : (pointsArr[0]?.[1] || 0)}
                             fill="#fff"
                             fontSize={isHighlighted ? 18 : 14}
                             fontWeight="bold"
